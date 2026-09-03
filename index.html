@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko">
+<html lang="ko" data-lang="ko">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -10,6 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="assets/theme.css">
+<script src="assets/lang.js"></script>
 <style>
   html,body{height:100%}
   body{display:flex; flex-direction:column; overflow:hidden; background:var(--paper)}
@@ -38,13 +39,7 @@
   .apptab:focus-visible{outline:2px solid var(--blue); outline-offset:2px}
 
   .spacer{flex:1}
-  .out{
-    font-family:var(--mono); font-size:11px; letter-spacing:.06em; color:var(--ink-2);
-    text-decoration:none; flex:none; padding:6px 11px;
-    border:1px solid var(--rule); border-radius:var(--r-sm);
-  }
-  .out:hover{color:var(--blue); border-color:var(--blue)}
-  @media (max-width:640px){ .brand,.out{display:none} .apptabs{flex:1} }
+  @media (max-width:640px){ .brand{display:none} .apptabs{flex:1} }
 
   main{flex:1; position:relative; min-height:0; background:var(--paper)}
   iframe{position:absolute; inset:0; width:100%; height:100%; border:0; display:block; background:var(--paper)}
@@ -54,9 +49,12 @@
 
 <div class="appbar">
   <div class="brand">ADS <b>Visualizer</b></div>
-  <nav class="apptabs" id="tabs" role="tablist" aria-label="시각화 목록"></nav>
+  <nav class="apptabs" id="tabs" role="tablist" aria-label="Visualizations"></nav>
   <div class="spacer"></div>
-  <a class="out" id="raw" href="#" target="_blank" rel="noopener">새 탭에서 열기 ↗</a>
+  <div class="langtoggle" role="group" aria-label="Language / 언어">
+    <button type="button" data-lang-set="en" aria-pressed="false">ENG</button>
+    <button type="button" data-lang-set="ko" aria-pressed="true">한국어</button>
+  </div>
 </div>
 
 <main id="stage"></main>
@@ -64,30 +62,41 @@
 <script>
 (function(){
   var VIEWS = [
-    { id:'blind-spot', label:'Blind Spot', file:'blind-spot.html', title:'ADS Blind Spot Simulator' },
-    { id:'pole-tilt',  label:'전주 기울기', file:'pole_tilt.html',  title:'왕복 두 장으로 전주 기울기 복원' }
+    { id:'blind-spot', file:'blind-spot.html',
+      label:{en:'Blind Spot', ko:'사각지대'},
+      title:{en:'ADS Blind Spot Simulator', ko:'ADS 사각지대 시뮬레이터'} },
+    { id:'pole-tilt',  file:'pole_tilt.html',
+      label:{en:'Pole Tilt', ko:'전주 기울기'},
+      title:{en:'Recovering pole tilt from a two-pass round trip', ko:'왕복 두 장으로 전주 기울기 복원'} }
   ];
 
   var tabs = document.getElementById('tabs');
   var stage = document.getElementById('stage');
-  var raw = document.getElementById('raw');
-  var frames = {};
+  var frames = {}, active = null;
 
   VIEWS.forEach(function(v){
     var b = document.createElement('button');
     b.className = 'apptab';
     b.type = 'button';
     b.id = 'tab-' + v.id;
-    b.textContent = v.label;
     b.setAttribute('role','tab');
     b.setAttribute('aria-selected','false');
-    b.setAttribute('title', v.title);
     b.addEventListener('click', function(){ location.hash = v.id; });
     tabs.appendChild(b);
   });
 
+  function labels(){
+    VIEWS.forEach(function(v){
+      var b = document.getElementById('tab-' + v.id);
+      b.textContent = ADSLang.t(v.label);
+      b.title = ADSLang.t(v.title);
+    });
+    if(active) document.title = ADSLang.t(active.title) + ' — ADS Visualizer';
+  }
+
   function show(id){
     var view = VIEWS.filter(function(v){ return v.id === id; })[0] || VIEWS[0];
+    active = view;
 
     VIEWS.forEach(function(v){
       var sel = v.id === view.id;
@@ -98,18 +107,20 @@
     if (!frames[view.id]) {
       var f = document.createElement('iframe');
       f.src = view.file;
-      f.title = view.title;
       f.setAttribute('allow','fullscreen');
+      f.addEventListener('load', function(){
+        try{ f.contentWindow.postMessage({ads_lang: ADSLang.get()}, '*'); }catch(e){}
+      });
       stage.appendChild(f);
       frames[view.id] = f;
     }
-
-    raw.href = view.file;
-    document.title = view.title + ' — ADS Visualizer';
+    labels();
   }
 
   function fromHash(){ return (location.hash || '').replace(/^#/, '') || VIEWS[0].id; }
 
+  ADSLang.on(labels);
+  ADSLang.bind(document);
   window.addEventListener('hashchange', function(){ show(fromHash()); });
   show(fromHash());
 })();

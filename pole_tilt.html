@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" data-lang="ko">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="assets/theme.css">
+<script src="assets/lang.js"></script>
 <style>
   /* scene + films */
   #scene{display:block;width:100%;height:460px;cursor:grab;background:var(--surface)}
@@ -65,83 +66,93 @@
 <div class="wrap">
 
 <header class="page-head">
-  <div class="eyebrow">ADS / 전주 기울기 복원 &middot; 왕복 2장 기하</div>
-  <h1>왕복 두 장으로 전주 기울기를 복원할 수 있는가</h1>
-  <p class="lead">사진 한 장은 전주가 3D 어디에 있는지 말해주지 못한다. 다만 카메라 중심과 영상 속 전주 선분이 만드는 평면 하나는 확정한다. 갈 때 한 장, 올 때 한 장이면 평면이 둘이 되고, 전주 축은 두 평면의 교선이다.</p>
+  <div class="eyebrow">
+    <span lang="en">ADS / pole tilt recovery &middot; two-view geometry</span>
+    <span lang="ko">ADS / 전주 기울기 복원 &middot; 왕복 2장 기하</span>
+  </div>
+  <h1>
+    <span lang="en">Can a round trip of two photos recover a pole's tilt?</span>
+    <span lang="ko">왕복 두 장으로 전주 기울기를 복원할 수 있는가</span>
+  </h1>
+  <p class="lead" lang="en">One photo cannot say where a pole sits in 3D. What it does fix is a single plane, spanned by the camera centre and the pole's line segment in the image. One shot going out and one coming back give two planes, and the pole's axis is where they meet.</p>
+  <p class="lead" lang="ko">사진 한 장은 전주가 3D 어디에 있는지 말해주지 못한다. 다만 카메라 중심과 영상 속 전주 선분이 만드는 평면 하나는 확정한다. 갈 때 한 장, 올 때 한 장이면 평면이 둘이 되고, 전주 축은 두 평면의 교선이다.</p>
 </header>
 
 <div class="tabs" role="tablist">
-  <button class="tab" role="tab" id="t-demo"   aria-controls="p-demo"   aria-selected="true">인터랙티브 데모</button>
-  <button class="tab" role="tab" id="t-theory" aria-controls="p-theory" aria-selected="false">이론</button>
-  <button class="tab" role="tab" id="t-refs"   aria-controls="p-refs"   aria-selected="false">근거 자료</button>
+  <button class="tab" role="tab" id="t-demo"   aria-controls="p-demo"   aria-selected="true"><span lang="en">Interactive demo</span><span lang="ko">인터랙티브 데모</span></button>
+  <button class="tab" role="tab" id="t-theory" aria-controls="p-theory" aria-selected="false"><span lang="en">Theory</span><span lang="ko">이론</span></button>
+  <button class="tab" role="tab" id="t-refs"   aria-controls="p-refs"   aria-selected="false"><span lang="en">Sources</span><span lang="ko">근거 자료</span></button>
 </div>
 
 <!-- ================= DEMO ================= -->
 <div role="tabpanel" id="p-demo" aria-labelledby="t-demo">
 
   <div class="panel">
-    <div class="panel-hd">주행 장면 <span>드래그해서 회전, 휠로 확대</span></div>
+    <div class="panel-hd">
+      <span><span lang="en">Driving scene</span><span lang="ko">주행 장면</span></span>
+      <span class="sub"><span lang="en">Drag to rotate, scroll to zoom</span><span lang="ko">드래그해서 회전, 휠로 확대</span></span>
+    </div>
     <canvas id="scene"></canvas>
     <div class="legend">
-      <span><i style="background:#D9822B"></i>갈 때 사진이 만든 평면</span>
-      <span><i style="background:#1A6FD4"></i>올 때 사진이 만든 평면</span>
-      <span><i style="background:#12946A"></i>두 평면의 교선, 복원된 축</span>
-      <span><i style="background:#39506A"></i>실제 전주</span>
+      <span><i style="background:#D9822B"></i><span lang="en">Plane from the outbound photo</span><span lang="ko">갈 때 사진이 만든 평면</span></span>
+      <span><i style="background:#1A6FD4"></i><span lang="en">Plane from the return photo</span><span lang="ko">올 때 사진이 만든 평면</span></span>
+      <span><i style="background:#12946A"></i><span lang="en">Their intersection, the recovered axis</span><span lang="ko">두 평면의 교선, 복원된 축</span></span>
+      <span><i style="background:#39506A"></i><span lang="en">The actual pole</span><span lang="ko">실제 전주</span></span>
     </div>
   </div>
 
   <div class="films">
     <div class="panel">
-      <div class="panel-hd">갈 때 찍은 한 장 <span>Cam A</span></div>
+      <div class="panel-hd"><span><span lang="en">The outbound shot</span><span lang="ko">갈 때 찍은 한 장</span></span> <span class="sub">Cam A</span></div>
       <canvas id="camA" width="760" height="980"></canvas>
     </div>
     <div class="panel">
-      <div class="panel-hd">올 때 찍은 한 장 <span>Cam B</span></div>
+      <div class="panel-hd"><span><span lang="en">The return shot</span><span lang="ko">올 때 찍은 한 장</span></span> <span class="sub">Cam B</span></div>
       <canvas id="camB" width="760" height="980"></canvas>
     </div>
   </div>
 
   <div class="lower">
     <div class="panel">
-      <div class="panel-hd">촬영 조건</div>
+      <div class="panel-hd"><span lang="en">Capture conditions</span><span lang="ko">촬영 조건</span></div>
       <div class="ctrl-body">
         <div class="ctrl">
-          <label>전주 기울기 <span class="val" id="vTilt">6.0°</span></label>
+          <label><span><span lang="en">Pole tilt</span><span lang="ko">전주 기울기</span></span> <span class="val" id="vTilt">6.0°</span></label>
           <input type="range" id="sTilt" min="0" max="15" step="0.1" value="6">
         </div>
         <div class="ctrl">
-          <label>기울어진 방향 <span class="val" id="vAz">90°</span></label>
+          <label><span><span lang="en">Direction of the lean</span><span lang="ko">기울어진 방향</span></span> <span class="val" id="vAz">90°</span></label>
           <input type="range" id="sAz" min="0" max="360" step="1" value="90">
         </div>
         <div class="ctrl">
-          <label>왕복 차선 간격 <span class="val" id="vLane">3.5 m</span></label>
+          <label><span><span lang="en">Gap between the two lanes</span><span lang="ko">왕복 차선 간격</span></span> <span class="val" id="vLane">3.5 m</span></label>
           <input type="range" id="sLane" min="0" max="8" step="0.1" value="3.5">
         </div>
         <div class="ctrl">
-          <label>두 촬영 지점의 앞뒤 어긋남 <span class="val" id="vGap">6.0 m</span></label>
+          <label><span><span lang="en">Along-road offset between the two shots</span><span lang="ko">두 촬영 지점의 앞뒤 어긋남</span></span> <span class="val" id="vGap">6.0 m</span></label>
           <input type="range" id="sGap" min="0" max="14" step="0.1" value="6">
         </div>
         <div class="ctrl">
-          <label>영상에서 전주 선을 딴 오차 <span class="val" id="vNoise">0.6 px</span></label>
+          <label><span><span lang="en">Error in tracing the pole line</span><span lang="ko">영상에서 전주 선을 딴 오차</span></span> <span class="val" id="vNoise">0.6 px</span></label>
           <input type="range" id="sNoise" min="0" max="3" step="0.05" value="0.6">
         </div>
         <div class="presets">
-          <button class="act" data-preset="good">정상 주행 조건</button>
-          <button class="act" data-preset="degen">같은 지점에서 두 장</button>
-          <button class="act" data-preset="noisy">선이 잘 안 잡히는 현장</button>
-          <button class="act" id="reroll">노이즈 다시 뽑기</button>
+          <button class="act" data-preset="good"><span lang="en">Normal driving</span><span lang="ko">정상 주행 조건</span></button>
+          <button class="act" data-preset="degen"><span lang="en">Both shots from one spot</span><span lang="ko">같은 지점에서 두 장</span></button>
+          <button class="act" data-preset="noisy"><span lang="en">Hard-to-trace site</span><span lang="ko">선이 잘 안 잡히는 현장</span></button>
+          <button class="act" id="reroll"><span lang="en">Redraw the noise</span><span lang="ko">노이즈 다시 뽑기</span></button>
         </div>
       </div>
     </div>
 
     <div class="panel">
-      <div class="panel-hd">복원 결과</div>
+      <div class="panel-hd"><span lang="en">Recovery result</span><span lang="ko">복원 결과</span></div>
       <div class="readout">
-        <div class="row"><span class="key">실제 기울기 / 방향</span><b id="rTrue">–</b></div>
-        <div class="row"><span class="key">복원한 기울기 / 방향</span><b id="rEst">–</b></div>
-        <div class="row"><span class="key">축 방향 오차</span><b id="rErr">–</b></div>
-        <div class="row"><span class="key">두 평면이 만나는 각</span><b id="rDihedral">–</b></div>
-        <div class="row"><span class="key">같은 조건 200회 반복 오차 RMS</span><b id="rRms">–</b></div>
+        <div class="row"><span class="key"><span lang="en">Actual tilt / direction</span><span lang="ko">실제 기울기 / 방향</span></span><b id="rTrue">–</b></div>
+        <div class="row"><span class="key"><span lang="en">Recovered tilt / direction</span><span lang="ko">복원한 기울기 / 방향</span></span><b id="rEst">–</b></div>
+        <div class="row"><span class="key"><span lang="en">Axis direction error</span><span lang="ko">축 방향 오차</span></span><b id="rErr">–</b></div>
+        <div class="row"><span class="key"><span lang="en">Angle between the two planes</span><span lang="ko">두 평면이 만나는 각</span></span><b id="rDihedral">–</b></div>
+        <div class="row"><span class="key"><span lang="en">RMS error over 200 runs</span><span lang="ko">같은 조건 200회 반복 오차 RMS</span></span><b id="rRms">–</b></div>
         <div id="verdict" class="alert good"></div>
       </div>
     </div>
@@ -149,50 +160,76 @@
 
   <div class="notes">
     <div class="note">
-      <h3>왜 두 장이면 되는가</h3>
-      <p>카메라 중심과 영상 속 전주 선분을 이으면 3D 공간에 부채꼴 평면이 하나 생긴다. 전주 축은 반드시 이 평면 위에 있다. 다만 그 평면 안 어디인지는 아직 모른다.</p>
-      <p>다른 위치에서 한 장을 더 찍으면 평면이 하나 더 생긴다. 축은 두 평면 모두에 들어있으므로 두 평면의 교선이 곧 전주 축이다. 교선은 방향과 위치를 함께 준다.</p>
+      <h3><span lang="en">Why two shots are enough</span><span lang="ko">왜 두 장이면 되는가</span></h3>
+      <p lang="en">Join the camera centre to the pole's segment in the image and you get a fan-shaped plane in 3D space. The pole's axis must lie on that plane. Where on the plane is still unknown.</p>
+      <p lang="en">Take a second shot from somewhere else and a second plane appears. The axis lies in both, so their intersection is the axis. That intersection carries direction and position together.</p>
+      <p lang="ko">카메라 중심과 영상 속 전주 선분을 이으면 3D 공간에 부채꼴 평면이 하나 생긴다. 전주 축은 반드시 이 평면 위에 있다. 다만 그 평면 안 어디인지는 아직 모른다.</p>
+      <p lang="ko">다른 위치에서 한 장을 더 찍으면 평면이 하나 더 생긴다. 축은 두 평면 모두에 들어있으므로 두 평면의 교선이 곧 전주 축이다. 교선은 방향과 위치를 함께 준다.</p>
     </div>
     <div class="note">
-      <h3>언제 깨지는가</h3>
-      <p>두 평면이 거의 겹치면 교선이 정해지지 않는다. 두 촬영 지점과 전주가 한 평면 위에 놓일 때 그렇다. 앞뒤 어긋남을 0으로 두고 전주를 도로 쪽으로 기울여보면 교차각이 0으로 내려가면서 복원값이 무너진다.</p>
-      <p>주행 촬영에서는 피하기 쉬운 조건이다. 갈 때와 올 때의 촬영 지점을 앞뒤로 몇 미터만 어긋나게 잡아도 교차각이 충분히 벌어진다.</p>
+      <h3><span lang="en">When it breaks</span><span lang="ko">언제 깨지는가</span></h3>
+      <p lang="en">If the two planes nearly coincide, the intersection is undetermined. That happens when both camera positions and the pole lie on one plane. Set the along-road offset to zero, lean the pole toward the road, and watch the crossing angle fall to zero as the recovery collapses.</p>
+      <p lang="en">In drive-based capture this is easy to avoid. A few metres of along-road offset between the outbound and return shots opens the crossing angle wide enough.</p>
+      <p lang="ko">두 평면이 거의 겹치면 교선이 정해지지 않는다. 두 촬영 지점과 전주가 한 평면 위에 놓일 때 그렇다. 앞뒤 어긋남을 0으로 두고 전주를 도로 쪽으로 기울여보면 교차각이 0으로 내려가면서 복원값이 무너진다.</p>
+      <p lang="ko">주행 촬영에서는 피하기 쉬운 조건이다. 갈 때와 올 때의 촬영 지점을 앞뒤로 몇 미터만 어긋나게 잡아도 교차각이 충분히 벌어진다.</p>
     </div>
     <div class="note">
-      <h3>남는 문제</h3>
-      <p>이 화면은 전주 선분을 이미 정확히 땄다고 가정한다. 실제로는 전주 표면이 밋밋해 그 단계가 흔들린다. 노이즈 슬라이더가 그 부분이고, 교차각이 좁을수록 같은 오차가 더 크게 증폭된다.</p>
-      <p>각도는 스케일 없이도 나온다. 반면 전주까지의 거리와 길이를 미터로 읽으려면 두 촬영 지점 사이 거리를 GPS나 오도메트리로 따로 넣어줘야 한다.</p>
+      <h3><span lang="en">What is left open</span><span lang="ko">남는 문제</span></h3>
+      <p lang="en">This page assumes the pole's segment has already been traced exactly. In practice a pole's surface is featureless and that step wobbles. The noise slider stands for it, and the narrower the crossing angle, the more the same error is amplified.</p>
+      <p lang="en">Angles come out without any scale. Reading the distance to the pole and its length in metres, though, means feeding in the baseline separately, from GPS or odometry.</p>
+      <p lang="ko">이 화면은 전주 선분을 이미 정확히 땄다고 가정한다. 실제로는 전주 표면이 밋밋해 그 단계가 흔들린다. 노이즈 슬라이더가 그 부분이고, 교차각이 좁을수록 같은 오차가 더 크게 증폭된다.</p>
+      <p lang="ko">각도는 스케일 없이도 나온다. 반면 전주까지의 거리와 길이를 미터로 읽으려면 두 촬영 지점 사이 거리를 GPS나 오도메트리로 따로 넣어줘야 한다.</p>
     </div>
   </div>
 </div>
-
 <!-- ================= THEORY ================= -->
 <div role="tabpanel" id="p-theory" aria-labelledby="t-theory" hidden>
 <div class="doc">
 
-<h2>1. 무엇을 구하려는가</h2>
-<p>전주를 3D 직선 <code>L</code>로 모델링한다. 3D 직선은 자유도가 4다. 우리가 실제로 원하는 건 그중 방향 벡터 <code>d</code> 하나이고, 여기서 두 수치를 뽑는다.</p>
-<div class="fml">θ = arccos( |d_z| )        <span class="cm">연직과 이루는 각, 기울기</span>
+<h2><span lang="en">1. What we are solving for</span><span lang="ko">1. 무엇을 구하려는가</span></h2>
+<p lang="en">Model the pole as a 3D line <code>L</code>. A 3D line has four degrees of freedom. What we actually want is one of them, the direction vector <code>d</code>, and two numbers come out of it.</p>
+<p lang="ko">전주를 3D 직선 <code>L</code>로 모델링한다. 3D 직선은 자유도가 4다. 우리가 실제로 원하는 건 그중 방향 벡터 <code>d</code> 하나이고, 여기서 두 수치를 뽑는다.</p>
+<div class="fml" lang="en">θ = arccos( |d_z| )        <span class="cm">angle from vertical, the tilt</span>
+φ = atan2( d_y , d_x )     <span class="cm">azimuth of the lean</span></div>
+<div class="fml" lang="ko">θ = arccos( |d_z| )        <span class="cm">연직과 이루는 각, 기울기</span>
 φ = atan2( d_y , d_x )     <span class="cm">기운 방위</span></div>
-<p>기울기 판정에는 방향만 있으면 된다. 위치와 길이는 별개 문제이고 뒤에서 다시 다룬다.</p>
+<p lang="en">Judging tilt needs the direction only. Position and length are a separate problem, taken up later.</p>
+<p lang="ko">기울기 판정에는 방향만 있으면 된다. 위치와 길이는 별개 문제이고 뒤에서 다시 다룬다.</p>
 
-<h2>2. 사진 한 장이 주는 것</h2>
-<p>카메라 중심을 <code>C</code>, 회전을 <code>R</code>, 내부 파라미터를 <code>K</code>라 하자. 영상에서 전주의 밑동과 꼭대기를 픽셀 <code>a</code>, <code>b</code>로 찍으면 각각의 시선 벡터는 이렇게 된다.</p>
+<h2><span lang="en">2. What one photo gives</span><span lang="ko">2. 사진 한 장이 주는 것</span></h2>
+<p lang="en">Let the camera centre be <code>C</code>, its rotation <code>R</code>, and its intrinsics <code>K</code>. Mark the pole's base and top in the image as pixels <code>a</code> and <code>b</code>, and each viewing ray is</p>
+<p lang="ko">카메라 중심을 <code>C</code>, 회전을 <code>R</code>, 내부 파라미터를 <code>K</code>라 하자. 영상에서 전주의 밑동과 꼭대기를 픽셀 <code>a</code>, <code>b</code>로 찍으면 각각의 시선 벡터는 이렇게 된다.</p>
 <div class="fml">r_a = normalize( R · K⁻¹ · [a; 1] )
 r_b = normalize( R · K⁻¹ · [b; 1] )</div>
-<p>두 시선과 카메라 중심이 만드는 평면이 역투영 평면 <code>π</code>다. 법선과 평면식은 다음과 같다.</p>
+<p lang="en">The plane spanned by those two rays and the camera centre is the back-projected plane <code>π</code>. Its normal and plane equation are</p>
+<p lang="ko">두 시선과 카메라 중심이 만드는 평면이 역투영 평면 <code>π</code>다. 법선과 평면식은 다음과 같다.</p>
 <div class="fml">n = normalize( r_a × r_b )
 π :  n · ( X − C ) = 0</div>
-<p>전주 축은 이 평면 위에 반드시 놓인다. 한 장은 직선의 4 자유도 중 2개를 고정한다. 남은 2개는 평면 안에서 어디에 어떤 각도로 놓였는지에 대한 자유도이고, 한 장으로는 절대 결정되지 않는다. 사진에서 잰 것은 선분의 위치가 아니라 방향뿐이기 때문이다.</p>
+<p lang="en">The pole's axis must lie on this plane. One photo pins down two of a line's four degrees of freedom; the other two stay free inside the plane, so one shot never determines the line. What a single image fixes is a direction, not a position.</p>
+<p lang="ko">전주 축은 이 평면 위에 반드시 놓인다. 한 장은 직선의 4 자유도 중 2개를 고정한다. 남은 2개는 평면 안에서 어디에 어떤 각도로 놓였는지에 대한 자유도이고, 한 장으로는 절대 결정되지 않는다. 사진에서 잰 것은 선분의 위치가 아니라 방향뿐이기 때문이다.</p>
 
-<div class="callout">
+<div class="callout" lang="en">
+  <b>Why a line and not a point</b>
+  A concrete pole's surface is nearly textureless, so point matching barely works. A skyline boundary against the sky or the background, on the other hand, stays stable across a wide range of angles. Line features being more robust than points against mismatches and occlusion is a standing result in the line-triangulation literature.
+</div>
+<div class="callout" lang="ko">
   <b>왜 점이 아니라 선을 쓰는가</b>
   전주 표면은 콘크리트 원기둥이라 텍스처가 거의 없다. 대응점 매칭이 잘 안 붙는다. 반면 하늘이나 배경과의 실루엣 경계는 어느 각도에서 봐도 안정적으로 나온다. 선 특징은 점 특징보다 매칭 오류와 가림, 영상 불확실성에 강하다는 점이 선 삼각측량 문헌에서 반복적으로 지적된다.
 </div>
 
-<h2>3. 두 장이면 교선이 곧 축이다</h2>
-<p>다른 위치에서 한 장을 더 찍으면 평면 <code>π₁</code>, <code>π₂</code>가 생긴다. 전주 축은 두 평면 모두에 들어있으므로 교선이 곧 축이다.</p>
-<div class="fml"><span class="cm">방향</span>
+<h2><span lang="en">3. With two, the intersection is the axis</span><span lang="ko">3. 두 장이면 교선이 곧 축이다</span></h2>
+<p lang="en">A second shot from a different position gives planes <code>π₁</code> and <code>π₂</code>. The pole's axis lies in both, so their intersection is the axis.</p>
+<p lang="ko">다른 위치에서 한 장을 더 찍으면 평면 <code>π₁</code>, <code>π₂</code>가 생긴다. 전주 축은 두 평면 모두에 들어있으므로 교선이 곧 축이다.</p>
+<div class="fml" lang="en"><span class="cm">direction</span>
+u = n₁ × n₂
+d = u / |u|
+
+<span class="cm">a point on the line  (c_i = n_i · C_i)</span>
+p = [ c₁ ( n₂ × u ) + c₂ ( u × n₁ ) ] / |u|²
+
+<span class="cm">the recovered line</span>
+L(t) = p + t · d</div>
+<div class="fml" lang="ko"><span class="cm">방향</span>
 u = n₁ × n₂
 d = u / |u|
 
@@ -201,32 +238,48 @@ p = [ c₁ ( n₂ × u ) + c₂ ( u × n₁ ) ] / |u|²
 
 <span class="cm">복원된 직선</span>
 L(t) = p + t · d</div>
-<p>이건 3D 직선을 두 평면의 만남으로 표현하는 Plücker 이중 표현 그대로다. 두 장에서 직선을 복원하는 문제는 일반적으로 유일해를 가진다.</p>
-<p>데모의 노이즈를 0으로 두면 축 방향 오차가 10⁻⁶도, 위치 오차가 10⁻¹⁵ m 수준으로 떨어진다. 근사가 아니라 닫힌 해다.</p>
+<p lang="en">This is exactly the Plücker dual representation, a 3D line written as the meeting of two planes. Recovering a line from two views has a unique solution in the general case.</p>
+<p lang="en">Set the demo's noise to zero and the axis direction error drops to about 10⁻⁶ degrees, the position error to about 10⁻¹⁵ m. This is a closed-form solution, not an approximation.</p>
+<p lang="ko">이건 3D 직선을 두 평면의 만남으로 표현하는 Plücker 이중 표현 그대로다. 두 장에서 직선을 복원하는 문제는 일반적으로 유일해를 가진다.</p>
+<p lang="ko">데모의 노이즈를 0으로 두면 축 방향 오차가 10⁻⁶도, 위치 오차가 10⁻¹⁵ m 수준으로 떨어진다. 근사가 아니라 닫힌 해다.</p>
 
-<h2>4. 스케일은 어디서 오는가</h2>
-<p><code>d</code>는 두 법선의 외적이므로 크기에 무관하다. 두 카메라 사이 거리를 몰라도 <b>기울기 각도와 방위는 그대로 나온다</b>. 필요한 건 두 카메라의 상대 <b>회전</b>과 베이스라인 <b>방향</b>이다.</p>
-<p>반면 교선 위의 점 <code>p</code>는 <code>C₁</code>, <code>C₂</code>에 선형으로 의존한다. 베이스라인을 두 배로 잘못 넣으면 전주 위치와 길이도 두 배가 된다. 전주까지 거리, 전주 길이, 근입 깊이 같은 미터 단위 수치를 쓰려면 GPS나 휠 오도메트리로 베이스라인 길이를 넣어야 한다.</p>
-<div class="callout">
+<h2><span lang="en">4. Where scale comes from</span><span lang="ko">4. 스케일은 어디서 오는가</span></h2>
+<p lang="en"><code>d</code> is a cross product of two normals, so it is independent of magnitude. <b>Tilt angle and azimuth come out unchanged</b> even without knowing the distance between the two cameras. What is needed is their relative <b>rotation</b> and the <b>direction</b> of the baseline.</p>
+<p lang="en">The point <code>p</code> on the intersection, by contrast, depends linearly on <code>C₁</code> and <code>C₂</code>. Feed in a baseline twice too long and the pole's position and length double with it. Any figure in metres — distance to the pole, pole length, embedment depth — needs the baseline length from GPS or wheel odometry.</p>
+<p lang="ko"><code>d</code>는 두 법선의 외적이므로 크기에 무관하다. 두 카메라 사이 거리를 몰라도 <b>기울기 각도와 방위는 그대로 나온다</b>. 필요한 건 두 카메라의 상대 <b>회전</b>과 베이스라인 <b>방향</b>이다.</p>
+<p lang="ko">반면 교선 위의 점 <code>p</code>는 <code>C₁</code>, <code>C₂</code>에 선형으로 의존한다. 베이스라인을 두 배로 잘못 넣으면 전주 위치와 길이도 두 배가 된다. 전주까지 거리, 전주 길이, 근입 깊이 같은 미터 단위 수치를 쓰려면 GPS나 휠 오도메트리로 베이스라인 길이를 넣어야 한다.</p>
+<div class="callout" lang="en">
+  <b>In short</b>
+  Angles are scale-free; position and length are scale-dependent. If the job is only to judge tilt, it holds without any absolute scale.
+</div>
+<div class="callout" lang="ko">
   <b>정리</b>
   각도는 스케일 프리, 위치와 길이는 스케일 의존. 기울기만 판정할 거라면 절대 스케일 없이도 성립한다.
 </div>
 
-<h2>5. 언제 깨지는가</h2>
-<p>해가 존재하려면 <code>u = n₁ × n₂ ≠ 0</code>이어야 한다. 즉 두 평면이 달라야 한다.</p>
-<div class="fml">축퇴 조건:  n₁ ∥ n₂   ⟺   π₁ = π₂
+<h2><span lang="en">5. When it degenerates</span><span lang="ko">5. 언제 깨지는가</span></h2>
+<p lang="en">A solution exists only while <code>u = n₁ × n₂ ≠ 0</code>, that is, while the two planes differ.</p>
+<p lang="ko">해가 존재하려면 <code>u = n₁ × n₂ ≠ 0</code>이어야 한다. 즉 두 평면이 달라야 한다.</p>
+<div class="fml" lang="en">degenerate:  n₁ ∥ n₂   ⟺   π₁ = π₂
+             ⟺   line L and baseline C₁C₂ lie on one plane</div>
+<div class="fml" lang="ko">축퇴 조건:  n₁ ∥ n₂   ⟺   π₁ = π₂
         ⟺   직선 L 과 베이스라인 C₁C₂ 가 한 평면 위에 있음</div>
-<p>가장 잘 알려진 형태는 카메라가 직선의 방향을 따라 이동하는 경우다. 이때 두 역투영 평면이 겹쳐 직선을 복원할 수 없다. 차선 표시나 연석처럼 진행 방향과 나란한 선이 주행 중 삼각측량되지 않는 이유가 이것이다.</p>
-<p>전주는 연직에 가깝고 차량은 수평으로 움직이므로 이 형태는 일어나지 않는다. 실제로 조심할 건 다른 형태다. <b>왕복 두 촬영 지점이 앞뒤로 같은 위치</b>면 베이스라인이 도로를 가로지르는 방향이 되고, 이때 전주가 그 방향으로 기울면 전주와 베이스라인이 한 평면에 놓인다. 데모의 두 번째 프리셋이 정확히 이 조건이고, 교차각이 0으로 떨어지면서 해가 사라진다.</p>
-<p>대응은 단순하다. 갈 때와 올 때의 촬영 지점을 앞뒤로 몇 미터만 어긋나게 잡으면 된다. 주행 영상이라면 프레임을 고르는 문제라 비용이 들지 않는다.</p>
+<p lang="en">The best-known form is a camera moving along the line's own direction. The two back-projected planes then coincide and the line cannot be recovered. This is why lane markings and kerbs, which run parallel to the direction of travel, are not triangulated while driving.</p>
+<p lang="en">A pole is close to vertical and the vehicle moves horizontally, so that form does not arise. The one to watch for is different. <b>If the outbound and return shots are taken at the same point along the road</b>, the baseline runs across the road, and a pole leaning in that same direction ends up coplanar with it. The demo's second preset is exactly this condition: the crossing angle falls to zero and the solution disappears.</p>
+<p lang="en">The remedy is simple. Offset the outbound and return shots by a few metres along the road. On driving footage that is a matter of picking frames, so it costs nothing.</p>
+<p lang="ko">가장 잘 알려진 형태는 카메라가 직선의 방향을 따라 이동하는 경우다. 이때 두 역투영 평면이 겹쳐 직선을 복원할 수 없다. 차선 표시나 연석처럼 진행 방향과 나란한 선이 주행 중 삼각측량되지 않는 이유가 이것이다.</p>
+<p lang="ko">전주는 연직에 가깝고 차량은 수평으로 움직이므로 이 형태는 일어나지 않는다. 실제로 조심할 건 다른 형태다. <b>왕복 두 촬영 지점이 앞뒤로 같은 위치</b>면 베이스라인이 도로를 가로지르는 방향이 되고, 이때 전주가 그 방향으로 기울면 전주와 베이스라인이 한 평면에 놓인다. 데모의 두 번째 프리셋이 정확히 이 조건이고, 교차각이 0으로 떨어지면서 해가 사라진다.</p>
+<p lang="ko">대응은 단순하다. 갈 때와 올 때의 촬영 지점을 앞뒤로 몇 미터만 어긋나게 잡으면 된다. 주행 영상이라면 프레임을 고르는 문제라 비용이 들지 않는다.</p>
 
-<h2>6. 조건수: 얼마나 안전한 여유인가</h2>
-<p>축퇴는 0이냐 아니냐의 이분법이 아니다. 두 평면이 만나는 각을 <code>α</code>라 하면</p>
+<h2><span lang="en">6. Conditioning: how much margin is safe</span><span lang="ko">6. 조건수: 얼마나 안전한 여유인가</span></h2>
+<p lang="en">Degeneracy is not a yes-or-no switch. Call the angle at which the two planes meet <code>α</code>:</p>
+<p lang="ko">축퇴는 0이냐 아니냐의 이분법이 아니다. 두 평면이 만나는 각을 <code>α</code>라 하면</p>
 <div class="fml">α = arccos( | n₁ · n₂ | )</div>
-<p>영상에서 선을 딴 오차 <code>δ</code>가 축 방향 오차로 옮겨갈 때 대략 <code>δ / sin α</code>로 증폭된다. <code>α</code>가 60도면 거의 그대로 전달되고, 10도면 대여섯 배로 커진다. 아래 그림이 그 감각이다.</p>
+<p lang="en">An error <code>δ</code> in tracing the line carries into the axis direction amplified by roughly <code>δ / sin α</code>. At <code>α</code> = 60° it passes through nearly unchanged; at 10° it grows five or six fold. The figure below is the intuition.</p>
+<p lang="ko">영상에서 선을 딴 오차 <code>δ</code>가 축 방향 오차로 옮겨갈 때 대략 <code>δ / sin α</code>로 증폭된다. <code>α</code>가 60도면 거의 그대로 전달되고, 10도면 대여섯 배로 커진다. 아래 그림이 그 감각이다.</p>
 
 <figure>
-<svg viewBox="0 0 660 230" width="100%" role="img" aria-label="두 평면의 교차각이 넓을 때와 좁을 때의 불확실성 비교">
+<svg viewBox="0 0 660 230" width="100%" role="img" aria-label="Uncertainty at a wide versus a narrow crossing angle">
   <defs>
     <clipPath id="cA"><rect x="10" y="20" width="310" height="190"/></clipPath>
     <clipPath id="cB"><rect x="340" y="20" width="310" height="190"/></clipPath>
@@ -244,7 +297,8 @@ L(t) = p + t · d</div>
       <text x="50" y="-8" font-size="13" fill="#5A6B7D" font-family="sans-serif">α = 70°</text>
     </g>
   </g>
-  <text x="165" y="215" font-size="13" fill="#12202F" text-anchor="middle" font-family="sans-serif">교차각이 넓으면 교선이 좁게 확정된다</text>
+  <text lang="en" x="165" y="215" font-size="13" fill="#12202F" text-anchor="middle" font-family="sans-serif">A wide crossing angle pins the line down tightly</text>
+  <text lang="ko" x="165" y="215" font-size="13" fill="#12202F" text-anchor="middle" font-family="sans-serif">교차각이 넓으면 교선이 좁게 확정된다</text>
 
   <!-- panel B -->
   <g clip-path="url(#cB)">
@@ -257,16 +311,26 @@ L(t) = p + t · d</div>
       <text x="20" y="-34" font-size="13" fill="#5A6B7D" font-family="sans-serif">α = 14°</text>
     </g>
   </g>
-  <text x="495" y="215" font-size="13" fill="#12202F" text-anchor="middle" font-family="sans-serif">좁으면 같은 오차가 길게 늘어난다</text>
+  <text lang="en" x="495" y="215" font-size="13" fill="#12202F" text-anchor="middle" font-family="sans-serif">A narrow one stretches the same error out</text>
+  <text lang="ko" x="495" y="215" font-size="13" fill="#12202F" text-anchor="middle" font-family="sans-serif">좁으면 같은 오차가 길게 늘어난다</text>
 
   <line x1="330" y1="20" x2="330" y2="196" stroke="#DCE3EC" stroke-width="1"/>
 </svg>
-<figcaption>두 띠의 두께는 영상에서 선을 딴 오차, 겹치는 영역은 그로 인한 해의 불확실성이다. 두 그림의 띠 두께는 같다. 교차각만 다르다.</figcaption>
+<figcaption lang="en">Each band's thickness is the error in tracing the line; the overlap is the resulting uncertainty in the solution. The bands are equally thick in both panels. Only the crossing angle differs.</figcaption>
+<figcaption lang="ko">두 띠의 두께는 영상에서 선을 딴 오차, 겹치는 영역은 그로 인한 해의 불확실성이다. 두 그림의 띠 두께는 같다. 교차각만 다르다.</figcaption>
 </figure>
 
-<p>이 데모로 직접 확인할 수 있다. 기울기 6도, 차선 간격 3.5 m, 선 추출 오차 0.6 px을 고정하고 앞뒤 어긋남만 바꾸며 각 400회씩 돌린 결과다.</p>
+<p lang="en">You can check this in the demo. Holding tilt at 6°, lane gap at 3.5 m and line-tracing error at 0.6 px, varying only the along-road offset, 400 runs each:</p>
+<p lang="ko">이 데모로 직접 확인할 수 있다. 기울기 6도, 차선 간격 3.5 m, 선 추출 오차 0.6 px을 고정하고 앞뒤 어긋남만 바꾸며 각 400회씩 돌린 결과다.</p>
 
-<div class="fml">어긋남   교차각 α    오차 RMS    RMS × sin α
+<div class="fml" lang="en">offset   angle α    RMS error   RMS × sin α
+ 0.5 m    4.1°       2.35°       0.167
+ 1.0 m    8.1°       1.18°       0.166
+ 2.0 m   16.0°       0.60°       0.167
+ 4.0 m   31.3°       0.33°       0.171
+ 6.0 m   45.3°       0.25°       0.177
+10.0 m   69.2°       0.21°       0.198</div>
+<div class="fml" lang="ko">어긋남   교차각 α    오차 RMS    RMS × sin α
  0.5 m    4.1°       2.35°       0.167
  1.0 m    8.1°       1.18°       0.166
  2.0 m   16.0°       0.60°       0.167
@@ -274,20 +338,35 @@ L(t) = p + t · d</div>
  6.0 m   45.3°       0.25°       0.177
 10.0 m   69.2°       0.21°       0.198</div>
 
-<p>마지막 열이 α가 좁은 구간에서 거의 상수로 유지된다. 오차가 <code>1 / sin α</code>로 증폭된다는 관계가 그대로 맞는다는 뜻이다. α가 커지면 다른 오차원이 지배하기 시작해 값이 조금씩 벌어진다.</p>
+<p lang="en">The last column stays nearly constant through the narrow-angle range, which is the <code>1 / sin α</code> amplification holding exactly. As α widens, other error sources start to dominate and the value drifts a little.</p>
+<p lang="ko">마지막 열이 α가 좁은 구간에서 거의 상수로 유지된다. 오차가 <code>1 / sin α</code>로 증폭된다는 관계가 그대로 맞는다는 뜻이다. α가 커지면 다른 오차원이 지배하기 시작해 값이 조금씩 벌어진다.</p>
 
-<h2>7. 실제 파이프라인으로 옮기면</h2>
-<ul>
+<h2><span lang="en">7. Moving it into a real pipeline</span><span lang="ko">7. 실제 파이프라인으로 옮기면</span></h2>
+<ul lang="en">
+  <li>Trace the centreline of the pole's silhouette in each frame, by segmentation or line-segment detection.</li>
+  <li>Associate the same pole across the two frames. On a round trip the time gap is large, so matching has to be position-based.</li>
+  <li>Get each frame's <code>R</code> and <code>C</code> from the vehicle pose. Rotation error here passes straight through into tilt error.</li>
+  <li>Compute the intersection of the two planes in closed form, and report the crossing angle <code>α</code> alongside it as a confidence.</li>
+  <li>With three or more views the planes no longer meet in exactly one line, so solve by least squares or an optimisation under the Plücker constraint.</li>
+</ul>
+<ul lang="ko">
   <li>전주 세그멘테이션 또는 선분 검출로 각 프레임에서 전주 실루엣의 중심선을 딴다.</li>
   <li>같은 전주를 두 프레임에 걸쳐 대응시킨다. 왕복 주행이면 시간 간격이 크므로 위치 기반 매칭이 필요하다.</li>
   <li>차량 자세로부터 각 프레임의 <code>R</code>, <code>C</code>를 얻는다. 여기의 회전 오차가 그대로 기울기 오차로 넘어간다.</li>
   <li>두 평면의 교선을 닫힌 해로 계산하고, 교차각 <code>α</code>로 신뢰도를 함께 낸다.</li>
   <li>세 장 이상이면 평면들이 한 직선에서 정확히 만나지 않으므로 최소제곱 또는 Plücker 제약을 건 최적화로 푼다.</li>
 </ul>
-<p>마지막 항목이 실무에서 중요하다. 왕복 주행이면 전주 하나당 프레임이 두 장이 아니라 수십 장이다. 교차각이 넓은 조합만 골라 쓰거나 전부를 최적화에 넣으면 두 장짜리 최악 조건을 대부분 피할 수 있다.</p>
+<p lang="en">That last item is what matters in practice. On a round trip a single pole appears in dozens of frames, not two. Keeping only the wide-angle combinations, or throwing all of them into the optimisation, avoids most of the two-view worst case.</p>
+<p lang="ko">마지막 항목이 실무에서 중요하다. 왕복 주행이면 전주 하나당 프레임이 두 장이 아니라 수십 장이다. 교차각이 넓은 조합만 골라 쓰거나 전부를 최적화에 넣으면 두 장짜리 최악 조건을 대부분 피할 수 있다.</p>
 
-<h2>8. 한계</h2>
-<ul>
+<h2><span lang="en">8. Limits</span><span lang="ko">8. 한계</span></h2>
+<ul lang="en">
+  <li>Camera pose error is result error. Arguing over one degree of tilt is meaningless if the pose is one degree off.</li>
+  <li>The pole is assumed perfectly straight. A real pole can bow under load, and a straight-line fit then returns an average tilt.</li>
+  <li>Occlusion. A base hidden by a tree or a vehicle shifts the segment's endpoint, and error at the base end weighs heavily on the angle.</li>
+  <li>Results in metres are tied directly to how accurately the baseline was measured.</li>
+</ul>
+<ul lang="ko">
   <li>카메라 자세 오차가 곧 결과 오차다. 기울기 1도를 다투는데 자세가 1도 틀리면 의미가 없다.</li>
   <li>전주가 완전한 직선이라는 가정. 실제 전주는 하중으로 휘어 있을 수 있고, 이때 직선 피팅은 평균 기울기를 준다.</li>
   <li>가림. 나무나 차량에 밑동이 가려지면 선분의 끝점이 틀어지고, 특히 밑동 쪽 오차가 각도에 크게 작용한다.</li>
@@ -301,77 +380,91 @@ L(t) = p + t · d</div>
 <div role="tabpanel" id="p-refs" aria-labelledby="t-refs" hidden>
 <div class="doc" style="max-width:82ch">
 
-<p>아래 항목은 위 이론 탭의 각 주장을 어디서 확인할 수 있는지 정리한 것이다. 링크는 공개 원문이거나 공개 초록이다.</p>
+<p lang="en">The entries below say where each claim in the theory tab can be checked. Links are to the open text or the open abstract.</p>
+<p lang="ko">아래 항목은 위 이론 탭의 각 주장을 어디서 확인할 수 있는지 정리한 것이다. 링크는 공개 원문이거나 공개 초록이다.</p>
 
-<div class="refgroup">선 삼각측량의 기본 구성</div>
+<div class="refgroup"><span lang="en">The basics of line triangulation</span><span lang="ko">선 삼각측량의 기본 구성</span></div>
 
 <div class="ref">
   <h4>Multiple View Geometry in Computer Vision</h4>
-  <div class="meta">Hartley &amp; Zisserman, Cambridge University Press, 2판 2004</div>
-  <p class="use">이미지 직선의 역투영이 카메라 중심을 지나는 평면이 된다는 기본 결과, 그리고 두 시점 직선 복원의 표준 서술. 이론 탭 2절과 3절의 출발점이다. 표준 교과서라 온라인 원문 링크는 두지 않는다.</p>
+  <div class="meta">Hartley &amp; Zisserman, Cambridge University Press, 2nd ed. 2004</div>
+  <p class="use" lang="en">The basic result that back-projecting an image line gives a plane through the camera centre, and the standard account of two-view line recovery. The starting point for sections 2 and 3. A standard textbook, so no online link is given.</p>
+  <p class="use" lang="ko">이미지 직선의 역투영이 카메라 중심을 지나는 평면이 된다는 기본 결과, 그리고 두 시점 직선 복원의 표준 서술. 이론 탭 2절과 3절의 출발점이다. 표준 교과서라 온라인 원문 링크는 두지 않는다.</p>
 </div>
 
 <div class="ref">
   <h4>Structure-from-motion using lines: Representation, triangulation, and bundle adjustment</h4>
   <div class="meta">Bartoli &amp; Sturm, Computer Vision and Image Understanding 100(3), 2005</div>
-  <p class="use">3D 직선을 두 평면의 만남으로 표현하는 이중 표현과, 두 시점에서 직선을 복원하면 일반적으로 유일해를 가진다는 서술. 여러 장으로 갈 때 필요한 Plücker 제약과 보정 절차, 번들 조정까지 이어진다. 이론 탭 3절과 7절의 근거.</p>
+  <p class="use" lang="en">The dual representation of a 3D line as the meeting of two planes, and the statement that two-view line recovery has a unique solution in the general case. It carries on into the Plücker constraint and the correction and bundle-adjustment steps needed for many views. The basis for sections 3 and 7.</p>
+  <p class="use" lang="ko">3D 직선을 두 평면의 만남으로 표현하는 이중 표현과, 두 시점에서 직선을 복원하면 일반적으로 유일해를 가진다는 서술. 여러 장으로 갈 때 필요한 Plücker 제약과 보정 절차, 번들 조정까지 이어진다. 이론 탭 3절과 7절의 근거.</p>
   <a href="http://perception.inrialpes.fr/Publications/2005/BS05/BartoliSturm-cviu05.pdf" target="_blank" rel="noopener">perception.inrialpes.fr/Publications/2005/BS05/BartoliSturm-cviu05.pdf</a>
 </div>
 
 <div class="ref">
   <h4>Algebraic Error Based Triangulation and Metric of Lines</h4>
   <div class="meta">Wu, Zhang, Zhang, PLoS ONE 10(7), 2015</div>
-  <p class="use">두 장일 때는 역투영 평면들의 교선이 곧 답이라 문제가 이론적으로 자명하고, 세 장 이상이면 측정 오차 때문에 평면들이 한 직선에서 만나지 않아 최적화가 필요해진다는 점을 명시한다. 또한 선 특징이 점 특징보다 매칭 오류와 가림, 영상 불확실성에 강하다는 근거. 이론 탭 2절 콜아웃과 7절.</p>
+  <p class="use" lang="en">States that with two views the intersection of the back-projected planes is the answer outright, making the problem theoretically trivial, while three or more views need optimisation because measurement error keeps the planes from meeting in one line. Also the basis for line features being more robust than points against mismatches, occlusion and image uncertainty. Section 2's callout and section 7.</p>
+  <p class="use" lang="ko">두 장일 때는 역투영 평면들의 교선이 곧 답이라 문제가 이론적으로 자명하고, 세 장 이상이면 측정 오차 때문에 평면들이 한 직선에서 만나지 않아 최적화가 필요해진다는 점을 명시한다. 또한 선 특징이 점 특징보다 매칭 오류와 가림, 영상 불확실성에 강하다는 근거. 이론 탭 2절 콜아웃과 7절.</p>
   <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4517892/" target="_blank" rel="noopener">ncbi.nlm.nih.gov/pmc/articles/PMC4517892/</a>
 </div>
 
-<div class="refgroup">축퇴 조건</div>
+<div class="refgroup"><span lang="en">Degenerate configurations</span><span lang="ko">축퇴 조건</span></div>
 
 <div class="ref">
   <h4>PL-VIWO: A Lightweight and Robust Point-Line Monocular Visual Inertial Wheel Odometry</h4>
   <div class="meta">arXiv:2503.00551</div>
-  <p class="use">평면 교차 방식의 직선 삼각측량이 축퇴 운동에서 실패한다는 점을 그림과 함께 정리한다. 카메라가 직선 방향과 나란히 움직이면 두 평면이 겹쳐 복원이 불가능해지고, 이는 차선이나 연석처럼 진행 방향과 나란한 선에서 지상 로봇 주행 중 흔히 발생한다. 이론 탭 5절의 직접 근거.</p>
+  <p class="use" lang="en">Sets out, with figures, how plane-intersection line triangulation fails under degenerate motion. A camera moving parallel to the line's direction makes the two planes coincide and recovery impossible, which is common for ground robots on lines parallel to travel, such as lane markings or kerbs. The direct basis for section 5.</p>
+  <p class="use" lang="ko">평면 교차 방식의 직선 삼각측량이 축퇴 운동에서 실패한다는 점을 그림과 함께 정리한다. 카메라가 직선 방향과 나란히 움직이면 두 평면이 겹쳐 복원이 불가능해지고, 이는 차선이나 연석처럼 진행 방향과 나란한 선에서 지상 로봇 주행 중 흔히 발생한다. 이론 탭 5절의 직접 근거.</p>
   <a href="https://arxiv.org/pdf/2503.00551" target="_blank" rel="noopener">arxiv.org/pdf/2503.00551</a>
 </div>
 
 <div class="ref">
   <h4>PL-VIWO2: A Lightweight, Fast and Robust Visual-Inertial-Wheel Odometry Using Points and Lines</h4>
   <div class="meta">arXiv:2509.21563</div>
-  <p class="use">축퇴를 카메라들이 한 평면 안에 머무는 상황으로 명시하고, 대응책으로 점 위 직선 정보와 방향 정보를 함께 쓰는 초기화를 제안한다. 또 관측이 여러 장일 때 기준 평면과 나머지 평면들의 교선을 구해 방향과 법선을 평균하는 방식을 설명한다. 이론 탭 5절과 7절 마지막 항목.</p>
+  <p class="use" lang="en">Names degeneracy as the case where the cameras stay within one plane, and proposes initialising with point-on-line and direction information together as the remedy. Also describes averaging direction and normal by intersecting a reference plane with the remaining planes when many observations are available. Section 5 and the last item of section 7.</p>
+  <p class="use" lang="ko">축퇴를 카메라들이 한 평면 안에 머무는 상황으로 명시하고, 대응책으로 점 위 직선 정보와 방향 정보를 함께 쓰는 초기화를 제안한다. 또 관측이 여러 장일 때 기준 평면과 나머지 평면들의 교선을 구해 방향과 법선을 평균하는 방식을 설명한다. 이론 탭 5절과 7절 마지막 항목.</p>
   <a href="https://arxiv.org/pdf/2509.21563" target="_blank" rel="noopener">arxiv.org/pdf/2509.21563</a>
 </div>
 
 <div class="ref">
   <h4>Algebraic Relations and Triangulation of Unlabeled Image Points</h4>
   <div class="meta">arXiv:1707.08722</div>
-  <p class="use">복원 대상이 베이스라인과 한 평면에 놓이면 두 시점 삼각측량이 모호해진다는 결과를 명제로 서술한다. 대상이 점일 때의 결과지만, 축퇴가 베이스라인과의 공면 조건에서 나온다는 구조는 직선 복원과 같다. 이론 탭 5절의 보조 근거.</p>
+  <p class="use" lang="en">States as a proposition that two-view triangulation becomes ambiguous once the target lies in a plane with the baseline. The result is for points, but the structure — degeneracy arising from coplanarity with the baseline — is the same as for lines. Supporting evidence for section 5.</p>
+  <p class="use" lang="ko">복원 대상이 베이스라인과 한 평면에 놓이면 두 시점 삼각측량이 모호해진다는 결과를 명제로 서술한다. 대상이 점일 때의 결과지만, 축퇴가 베이스라인과의 공면 조건에서 나온다는 구조는 직선 복원과 같다. 이론 탭 5절의 보조 근거.</p>
   <a href="https://arxiv.org/pdf/1707.08722" target="_blank" rel="noopener">arxiv.org/pdf/1707.08722</a>
 </div>
 
 <div class="ref">
   <h4>Avoiding Degeneracy for Monocular Visual SLAM with Point and Line Features</h4>
   <div class="meta">arXiv:2103.01501</div>
-  <p class="use">직선 특징의 자유도가 4라는 점과 Plücker 표현이 삼각측량에 유리한 이유를 정리한다. 축퇴 회피를 SLAM 파이프라인 수준에서 다룬 사례. 이론 탭 1절과 5절.</p>
+  <p class="use" lang="en">Sets out that a line feature has four degrees of freedom and why the Plücker representation suits triangulation. An instance of handling degeneracy avoidance at the level of a SLAM pipeline. Sections 1 and 5.</p>
+  <p class="use" lang="ko">직선 특징의 자유도가 4라는 점과 Plücker 표현이 삼각측량에 유리한 이유를 정리한다. 축퇴 회피를 SLAM 파이프라인 수준에서 다룬 사례. 이론 탭 1절과 5절.</p>
   <a href="https://arxiv.org/pdf/2103.01501" target="_blank" rel="noopener">arxiv.org/pdf/2103.01501</a>
 </div>
 
-<div class="refgroup">전주 기울기 응용 사례</div>
+<div class="refgroup"><span lang="en">Applied to pole tilt</span><span lang="ko">전주 기울기 응용 사례</span></div>
 
 <div class="ref">
   <h4>Automatic Utility Pole Inclination Angle Measurement Using Unmanned Aerial Vehicle and Deep Learning</h4>
-  <div class="meta">Alam 외, NSF 공개본</div>
-  <p class="use">딥러닝으로 전주를 검출·분할한 뒤 컴퓨터 비전으로 기울기 각도를 계산한다. 서로 다른 기상 조건에서 촬영한 64장 84개 전주로 평가해 분할 정확도 93.74퍼센트, 평균 기울기 오차 0.59도를 보고한다. 기울기 각도를 영상에서 뽑는 접근의 실측 성능 기준선으로 쓸 수 있다.</p>
+  <div class="meta">Alam et al., NSF public copy</div>
+  <p class="use" lang="en">Detects and segments poles with deep learning, then computes the inclination angle with computer vision. Evaluated on 84 poles across 64 images shot in varied weather, reporting 93.74 percent segmentation accuracy and 0.59 degrees mean tilt error. Usable as a measured performance baseline for extracting tilt from imagery.</p>
+  <p class="use" lang="ko">딥러닝으로 전주를 검출·분할한 뒤 컴퓨터 비전으로 기울기 각도를 계산한다. 서로 다른 기상 조건에서 촬영한 64장 84개 전주로 평가해 분할 정확도 93.74퍼센트, 평균 기울기 오차 0.59도를 보고한다. 기울기 각도를 영상에서 뽑는 접근의 실측 성능 기준선으로 쓸 수 있다.</p>
   <a href="https://par.nsf.gov/servlets/purl/10114064" target="_blank" rel="noopener">par.nsf.gov/servlets/purl/10114064</a>
 </div>
 
 <div class="ref">
   <h4>Utility Pole Fire Risk Inspection from 2D Street-Side Images</h4>
   <div class="meta">arXiv:2406.13158</div>
-  <p class="use">스트리트뷰 한 장에서 전주 선의 기울기와 절편으로 각도를 계산하는 접근을 시도하고, 카메라 각도 변화에 취약해 전주에 없는 기울기가 생기며 수목 이격은 판정할 수 없다고 보고한다. 또 깊이 추정 모델을 쓰면 이격은 재도 기울기 정보는 얻지 못한다고 명시한다. 단안 한 장 접근의 한계를 보여주는 자료이자 왜 두 장이 필요한지에 대한 반대 근거.</p>
+  <p class="use" lang="en">Tries computing the angle from the slope and intercept of the pole line in a single street-view image, and reports that it is fragile to camera-angle changes, inventing tilt that is not there, and that vegetation clearance cannot be judged at all. It also states that a depth estimation model recovers clearance but no tilt information. Both a picture of what single-view monocular gets you and the counter-evidence for why two shots are needed.</p>
+  <p class="use" lang="ko">스트리트뷰 한 장에서 전주 선의 기울기와 절편으로 각도를 계산하는 접근을 시도하고, 카메라 각도 변화에 취약해 전주에 없는 기울기가 생기며 수목 이격은 판정할 수 없다고 보고한다. 또 깊이 추정 모델을 쓰면 이격은 재도 기울기 정보는 얻지 못한다고 명시한다. 단안 한 장 접근의 한계를 보여주는 자료이자 왜 두 장이 필요한지에 대한 반대 근거.</p>
   <a href="https://arxiv.org/html/2406.13158v1" target="_blank" rel="noopener">arxiv.org/html/2406.13158v1</a>
 </div>
 
-<div class="callout" style="margin-top:26px">
+<div class="callout" style="margin-top:26px" lang="en">
+  <b>Still missing</b>
+  Regulatory limits on pole tilt differ by operator and by country, and no single figure could be confirmed in open sources. For a Korean acceptance threshold, KEPCO's distribution rules or the ordering party's specification have to be checked directly.
+</div>
+<div class="callout" style="margin-top:26px" lang="ko">
   <b>보완이 필요한 부분</b>
   전주 기울기의 규정상 허용 한계는 사업자와 국가 기준마다 다르고 공개 자료에서 단일 수치를 확인하지 못했다. 국내 판정 기준이 필요하면 한전 배전 관련 사규나 발주처 사양서를 직접 확인해야 한다.
 </div>
@@ -382,6 +475,23 @@ L(t) = p + t · d</div>
 </div>
 
 <script>
+/* ---------------- strings ---------------- */
+const STR = {
+  en:{ camA:'outbound', camB:'return',
+       filmA:'one traced line, one plane', filmB:'the second plane',
+       noSol:'no solution', noNoise:'no noise',
+       vBad:'The two planes are all but the same plane. Both camera positions and the pole lie on one plane, so the intersection is undetermined. A few metres of along-road offset fixes it at once.',
+       vWarn:'The intersection holds, but the tracing error is amplified sharply into the angle. Either widen the gap between the shots or improve how accurately the pole line is extracted.',
+       vGood:'The two planes are far enough apart that the intersection is stable. Two photos recover both tilt and direction.' },
+  ko:{ camA:'갈 때', camB:'올 때',
+       filmA:'딴 선 하나가 평면 하나', filmB:'두 번째 평면',
+       noSol:'해 없음', noNoise:'노이즈 없음',
+       vBad:'두 평면이 거의 같은 평면이다. 두 촬영 지점과 전주가 한 평면 위에 놓여 교선이 정해지지 않는다. 앞뒤 어긋남을 몇 미터만 주면 바로 풀린다.',
+       vWarn:'교선은 잡히지만 선을 딴 오차가 각도로 크게 증폭된다. 촬영 지점을 더 벌리거나 전주 선 추출 정확도를 올려야 한다.',
+       vGood:'두 평면이 충분히 벌어져 있어 교선이 안정적으로 정해진다. 사진 두 장으로 기울기와 방향이 모두 복원된다.' }
+};
+function T(k){ return STR[(window.ADSLang ? ADSLang.get() : 'en')][k]; }
+
 /* ---------------- tabs ---------------- */
 const tabs=[...document.querySelectorAll('.tab')];
 function selectTab(btn){
@@ -552,8 +662,8 @@ function drawScene(S){
     sctx.fillStyle='#12202F'; sctx.font='600 12px "Apple SD Gothic Neo",sans-serif';
     sctx.fillText(label,c.x+10,c.y-8);
   };
-  camMark(S.CA,'#D9822B','갈 때');
-  camMark(S.CB,'#1A6FD4','올 때');
+  camMark(S.CA,'#D9822B',T('camA'));
+  camMark(S.CB,'#1A6FD4',T('camB'));
 
   const arrow=(y,dir,color)=>{
     const a=[dir*8,y,0.05], b=[dir*12,y,0.05];
@@ -592,7 +702,7 @@ function drawFilm(id,S,which){
   }
   c.fillStyle='rgba(255,255,255,0.55)';
   c.font='500 22px "Apple SD Gothic Neo",sans-serif';
-  c.fillText(which==='A'?'딴 선 하나가 평면 하나':'두 번째 평면', 26, IMH-30);
+  c.fillText(which==='A'?T('filmA'):T('filmB'), 26, IMH-30);
 }
 
 function fmt(n,d=1){return n.toFixed(d);}
@@ -618,23 +728,23 @@ function render(){
     eEl.textContent=`${fmt(err,2)}°`;
     eEl.className = err<0.5?'ok':(err<2?'':'bad');
   }else{
-    document.getElementById('rEst').textContent='해 없음';
+    document.getElementById('rEst').textContent=T('noSol');
     eEl.textContent='–'; eEl.className='bad';
   }
 
   const rms=rmsError(P);
-  document.getElementById('rRms').textContent = P.noise<=0 ? '노이즈 없음' : `${fmt(rms,2)}°`;
+  document.getElementById('rRms').textContent = P.noise<=0 ? T('noNoise') : `${fmt(rms,2)}°`;
 
   const v=document.getElementById('verdict');
   if(dh<4){
     v.className='alert risk';
-    v.textContent='두 평면이 거의 같은 평면이다. 두 촬영 지점과 전주가 한 평면 위에 놓여 교선이 정해지지 않는다. 앞뒤 어긋남을 몇 미터만 주면 바로 풀린다.';
+    v.textContent=T('vBad');
   }else if(rms>1.0){
     v.className='alert risk';
-    v.textContent='교선은 잡히지만 선을 딴 오차가 각도로 크게 증폭된다. 촬영 지점을 더 벌리거나 전주 선 추출 정확도를 올려야 한다.';
+    v.textContent=T('vWarn');
   }else{
     v.className='alert good';
-    v.textContent='두 평면이 충분히 벌어져 있어 교선이 안정적으로 정해진다. 사진 두 장으로 기울기와 방향이 모두 복원된다.';
+    v.textContent=T('vGood');
   }
 }
 
@@ -674,6 +784,14 @@ document.getElementById('reroll').addEventListener('click',()=>{
   render();
 });
 window.addEventListener('resize',()=>{ if(!document.getElementById('p-demo').hidden) render(); });
+
+if(window.ADSLang) ADSLang.on(l=>{
+  document.title = l==='ko'
+    ? '왕복 두 장으로 전주 기울기 복원 — 데모와 이론'
+    : 'Recovering pole tilt from a two-pass round trip — demo and theory';
+  render();
+});
+
 render();
 </script>
 </body>

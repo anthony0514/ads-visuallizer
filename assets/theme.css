@@ -99,7 +99,7 @@ h2,h3,h4{font-family:var(--display); letter-spacing:-.01em}
   font-family:var(--display); font-weight:600; font-size:13px;
   display:flex; justify-content:space-between; align-items:baseline; gap:12px;
 }
-.panel-hd span{font-family:var(--body); font-weight:400; color:var(--ink-2); font-size:12px}
+.panel-hd .sub{font-family:var(--body); font-weight:400; color:var(--ink-2); font-size:12px}
 
 /* --- section tabs (inside a page) ---------------------------------------- */
 .tabs{display:flex; gap:2px; border-bottom:1px solid var(--rule); margin-bottom:22px}
@@ -119,7 +119,7 @@ h2,h3,h4{font-family:var(--display); letter-spacing:-.01em}
   display:flex; gap:16px; flex-wrap:wrap;
   font-family:var(--mono); font-size:11px; color:var(--ink-2);
 }
-.legend span{display:flex; align-items:center; gap:6px}
+.legend > span{display:flex; align-items:center; gap:6px}
 .legend i,.legend .sw{
   display:inline-block; width:10px; height:10px; border-radius:2px;
   flex:none; vertical-align:-1px;
@@ -188,5 +188,25 @@ code{
 .callout b{display:block; margin-bottom:4px}
 figure{margin:20px 0}
 figcaption{font-size:12.5px; color:var(--ink-2); margin-top:8px}
+
+/* --- bilingual markup ----------------------------------------------------
+   Every translated string ships twice, tagged with its own lang attribute.
+   The document's data-lang decides which copy is in the flow.             */
+html[data-lang="ko"] [lang="en"]{display:none !important}
+html[data-lang="en"] [lang="ko"]{display:none !important}
+
+.langtoggle{
+  display:inline-flex; flex:none; padding:2px;
+  border:1px solid var(--rule); border-radius:999px; background:var(--surface);
+}
+.langtoggle button{
+  font:inherit; font-family:var(--display); font-size:12px; font-weight:600;
+  color:var(--ink-2); background:transparent; border:0; border-radius:999px;
+  padding:5px 13px; cursor:pointer; white-space:nowrap;
+  transition:background .12s, color .12s;
+}
+.langtoggle button:hover{color:var(--ink)}
+.langtoggle button[aria-pressed="true"]{background:var(--ink); color:var(--surface)}
+.langtoggle button:focus-visible{outline:2px solid var(--blue); outline-offset:2px}
 
 @media (prefers-reduced-motion: reduce){ *{animation:none !important; transition:none !important} }

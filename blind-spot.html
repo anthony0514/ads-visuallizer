@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="ko" data-lang="ko">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -9,6 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="assets/theme.css">
+<script src="assets/lang.js"></script>
 <title>ADS Blind Spot Simulator</title>
 </head>
 <body>
@@ -69,67 +70,77 @@
 
 <div class="wrap">
   <header class="page-head">
-    <div class="eyebrow">ADS / drive-based pole inspection &middot; coverage geometry</div>
-    <h1>ADS Blind Spot Simulator</h1>
-    <p class="lead">A forward-looking camera holds a pole only while it is ahead and inside the usable range. Each pass sweeps one half of the azimuth; whatever neither pass reaches stays blind.</p>
+    <div class="eyebrow">
+      <span lang="en">ADS / drive-based pole inspection &middot; coverage geometry</span>
+      <span lang="ko">ADS / 주행 기반 전주 점검 &middot; 커버리지 기하</span>
+    </div>
+    <h1>
+      <span lang="en">ADS Blind Spot Simulator</span>
+      <span lang="ko">ADS 사각지대 시뮬레이터</span>
+    </h1>
+    <p class="lead" lang="en">A forward-looking camera holds a pole only while it is ahead and inside the usable range. Each pass sweeps one half of the azimuth; whatever neither pass reaches stays blind.</p>
+    <p class="lead" lang="ko">전방 카메라는 전주가 앞에 있고 유효 촬영 거리 안에 있는 동안에만 그 전주를 담는다. 한 번의 패스는 방위각의 절반만 훑고, 두 패스 어느 쪽도 닿지 못한 각도가 사각지대로 남는다.</p>
   </header>
 
   <div class="panel">
-    <div class="panel-hd">Plan view <span>Five poles, one round trip</span></div>
+    <div class="panel-hd">
+      <span><span lang="en">Plan view</span><span lang="ko">평면도</span></span>
+      <span class="sub"><span lang="en">Five poles, one round trip</span><span lang="ko">전주 5기, 왕복 1회</span></span>
+    </div>
     <div class="sim-map">
       <canvas id="map" height="232" data-fill="1"></canvas>
     </div>
     <div class="map-legend">
       <div class="legend">
-        <span><i class="sw" style="background:var(--live)"></i>In view now</span>
-        <span><i class="sw" style="background:var(--cov)"></i>Already seen</span>
-        <span><i class="sw" style="background:var(--blind)"></i>Never seen</span>
+        <span><i class="sw" style="background:var(--live)"></i><span lang="en">In view now</span><span lang="ko">지금 담기는 각도</span></span>
+        <span><i class="sw" style="background:var(--cov)"></i><span lang="en">Already seen</span><span lang="ko">이미 담긴 각도</span></span>
+        <span><i class="sw" style="background:var(--blind)"></i><span lang="en">Never seen</span><span lang="ko">한 번도 못 담은 각도</span></span>
       </div>
     </div>
 
     <div class="poles">
         <div class="pole-card">
-          <div class="pole-head"><span class="pole-name">Pole A</span><span class="pole-pct" id="p-a">&ndash;<small>%</small></span></div>
+          <div class="pole-head"><span class="pole-name"><span lang="en">Pole A</span><span lang="ko">전주 A</span></span><span class="pole-pct" id="p-a">&ndash;<small>%</small></span></div>
           <canvas id="rose-a" height="188"></canvas>
-          <div class="pole-meta"><span>Shots / pass</span><b id="f-a">&ndash;</b></div>
+          <div class="pole-meta"><span><span lang="en">Shots / pass</span><span lang="ko">패스당 촬영 수</span></span><b id="f-a">&ndash;</b></div>
           <div class="ctl">
-            <label for="s-a">Offset <b><span id="l-a">10.0</span> m</b></label>
+            <label for="s-a"><span><span lang="en">Offset</span><span lang="ko">이격 거리</span></span> <b><span id="l-a">10.0</span> m</b></label>
             <input type="range" id="s-a" min="4" max="40" step="0.5" value="10.0">
           </div>
         </div>
         <div class="pole-card">
-          <div class="pole-head"><span class="pole-name">Pole B</span><span class="pole-pct" id="p-b">&ndash;<small>%</small></span></div>
+          <div class="pole-head"><span class="pole-name"><span lang="en">Pole B</span><span lang="ko">전주 B</span></span><span class="pole-pct" id="p-b">&ndash;<small>%</small></span></div>
           <canvas id="rose-b" height="188"></canvas>
-          <div class="pole-meta"><span>Shots / pass</span><b id="f-b">&ndash;</b></div>
+          <div class="pole-meta"><span><span lang="en">Shots / pass</span><span lang="ko">패스당 촬영 수</span></span><b id="f-b">&ndash;</b></div>
           <div class="ctl">
-            <label for="s-b">Offset <b><span id="l-b">12.5</span> m</b></label>
+            <label for="s-b"><span><span lang="en">Offset</span><span lang="ko">이격 거리</span></span> <b><span id="l-b">12.5</span> m</b></label>
             <input type="range" id="s-b" min="4" max="40" step="0.5" value="12.5">
           </div>
         </div>
         <div class="pole-card">
-          <div class="pole-head"><span class="pole-name">Pole C</span><span class="pole-pct" id="p-c">&ndash;<small>%</small></span></div>
+          <div class="pole-head"><span class="pole-name"><span lang="en">Pole C</span><span lang="ko">전주 C</span></span><span class="pole-pct" id="p-c">&ndash;<small>%</small></span></div>
           <canvas id="rose-c" height="188"></canvas>
-          <div class="pole-meta"><span>Shots / pass</span><b id="f-c">&ndash;</b></div>
+          <div class="pole-meta"><span><span lang="en">Shots / pass</span><span lang="ko">패스당 촬영 수</span></span><b id="f-c">&ndash;</b></div>
           <div class="ctl">
-            <label for="s-c">Offset <b><span id="l-c">11.0</span> m</b></label>
+            <label for="s-c"><span><span lang="en">Offset</span><span lang="ko">이격 거리</span></span> <b><span id="l-c">11.0</span> m</b></label>
             <input type="range" id="s-c" min="4" max="40" step="0.5" value="11.0">
           </div>
         </div>
         <div class="pole-card">
-          <div class="pole-head"><span class="pole-name">Pole D</span><span class="pole-pct" id="p-d">&ndash;<small>%</small></span></div>
+          <div class="pole-head"><span class="pole-name"><span lang="en">Pole D</span><span lang="ko">전주 D</span></span><span class="pole-pct" id="p-d">&ndash;<small>%</small></span></div>
           <canvas id="rose-d" height="188"></canvas>
-          <div class="pole-meta"><span>Shots / pass</span><b id="f-d">&ndash;</b></div>
+          <div class="pole-meta"><span><span lang="en">Shots / pass</span><span lang="ko">패스당 촬영 수</span></span><b id="f-d">&ndash;</b></div>
           <div class="ctl">
-            <label for="s-d">Offset <b><span id="l-d">15.0</span> m</b></label>
+            <label for="s-d"><span><span lang="en">Offset</span><span lang="ko">이격 거리</span></span> <b><span id="l-d">15.0</span> m</b></label>
             <input type="range" id="s-d" min="4" max="40" step="0.5" value="15.0">
           </div>
         </div>
         <div class="pole-card">
-          <div class="pole-head"><span class="pole-name">Pole E</span><span class="pole-pct" id="p-e">&ndash;<small>%</small></span></div>
+          <div class="pole-head"><span class="pole-name"><span lang="en">Pole E</span><span lang="ko">전주 E</span></span><span class="pole-pct" id="p-e">&ndash;<small>%</small></span></div>
           <canvas id="rose-e" height="188"></canvas>
-          <div class="pole-meta"><span>Shots / pass</span><b id="f-e">&ndash;</b></div>
+          <div class="pole-meta"><span><span lang="en">Shots / pass</span><span lang="ko">패스당 촬영 수</span></span><b id="f-e">&ndash;</b></div>
           <div class="ctl">
-            <label for="s-e">Offset <b><span id="l-e">13.0</span> m</b></label>
+            <label for="s-e"><span><span lang="en">Offset</span><span lang="ko">이격 거리</span></span> <b><span id="l-e">13.0</span> m</b></label>
             <input type="range" id="s-e" min="4" max="40" step="0.5" value="13.0">
           </div>
         </div>
@@ -137,15 +148,15 @@
 
     <div class="controls">
       <div class="ctl">
-        <label for="s-v">Speed <b><span id="l-v">40</span> km/h &middot; <span id="l-v2">25</span> mph</b></label>
+        <label for="s-v"><span><span lang="en">Speed</span><span lang="ko">주행 속도</span></span> <b><span id="l-v">40</span> km/h &middot; <span id="l-v2">25</span> mph</b></label>
         <input type="range" id="s-v" min="20" max="110" step="1" value="40">
       </div>
       <div class="ctl">
-        <label for="s-L">Effective capture range <b><span id="l-L">50</span> m</b></label>
+        <label for="s-L"><span><span lang="en">Effective capture range</span><span lang="ko">유효 촬영 거리</span></span> <b><span id="l-L">50</span> m</b></label>
         <input type="range" id="s-L" min="12" max="80" step="1" value="50">
       </div>
       <div class="ctl">
-        <label for="s-sp">Pole spacing <b><span id="l-sp">40</span> m</b></label>
+        <label for="s-sp"><span><span lang="en">Pole spacing</span><span lang="ko">전주 간격</span></span> <b><span id="l-sp">40</span> m</b></label>
         <input type="range" id="s-sp" min="15" max="90" step="1" value="40">
       </div>
       <div class="btnrow">
@@ -157,7 +168,7 @@
         <img id="recimg" alt="Recorded lap">
         <div class="recnote">
           <button class="act" id="recsave" hidden>Save GIF</button>
-          <a id="recdl" hidden download="ads-blind-spot.gif">Download GIF</a>
+          <a id="recdl" hidden download="ads-blind-spot.gif"><span lang="en">Download GIF</span><span lang="ko">GIF 내려받기</span></a>
           <span id="recinfo"></span>
           <span id="recerr"></span>
         </div>
@@ -168,6 +179,28 @@
 
 <script>
 (function(){
+  var STR = {
+    en:{ back:'BACK', road:'ROAD', pass1:'PASS 1  \u2192', pass2:'\u2190  PASS 2', pole:'POLE ',
+         play:'Play', pause:'Pause', replay:'Replay', rec:'Record GIF',
+         render:'Rendering ', encode:'Encoding ',
+         save:'Save GIF', saving:'Saving\u2026', saved:'Saved',
+         frames:' frames', spacing:'spacing ', passes:'two passes',
+         eCancel:'Save cancelled.',
+         eBusy:'A prompt is already open. Try again in a moment.',
+         eBig:'GIF is over the 16 MB save limit.',
+         eNone:'Saving is not available in this view.' },
+    ko:{ back:'반대편', road:'도로면', pass1:'1패스  \u2192', pass2:'\u2190  2패스', pole:'전주 ',
+         play:'재생', pause:'일시정지', replay:'다시 재생', rec:'GIF 녹화',
+         render:'렌더링 ', encode:'인코딩 ',
+         save:'GIF 저장', saving:'저장 중\u2026', saved:'저장됨',
+         frames:'프레임', spacing:'간격 ', passes:'왕복 2패스',
+         eCancel:'저장을 취소했다.',
+         eBusy:'이미 열린 창이 있다. 잠시 후 다시 시도하면 된다.',
+         eBig:'GIF가 16 MB 저장 한도를 넘는다.',
+         eNone:'이 화면에서는 저장을 쓸 수 없다.' }
+  };
+  function T(k){ return STR[(window.ADSLang ? ADSLang.get() : 'en')][k]; }
+
   var BINS = 720, DEG = Math.PI/180;
   var SPACING = 40;
   var FPS = 15;                 // one camera, measured rate
@@ -395,9 +428,9 @@
 
     g.font=MONO; g.textAlign='right';
     g.fillStyle = phase===2? LIVE : css('--ink-2');
-    g.fillText('←  PASS 2', W-12, laneNear-half-8);
+    g.fillText(T('pass2'), W-12, laneNear-half-8);
     g.fillStyle = phase===1? LIVE : css('--ink-2');
-    g.fillText('PASS 1  →', W-12, laneFar+half+16);
+    g.fillText(T('pass1'), W-12, laneFar+half+16);
   }
 
   function drawRose(id, mask){
@@ -413,8 +446,8 @@
     g.beginPath(); g.arc(cx,cy,R,0,Math.PI*2); g.stroke();
     g.beginPath(); g.arc(cx,cy,R-ring,0,Math.PI*2); g.stroke();
     g.fillStyle=css('--ink-2'); g.font=monoFont(9); g.textAlign='center';
-    g.fillText('ROAD', cx, cy+R+14);
-    g.fillText('BACK', cx, cy-R-7);
+    g.fillText(T('road'), cx, cy+R+14);
+    g.fillText(T('back'), cx, cy-R-7);
   }
 
   // ---- scene -------------------------------------------------------------
@@ -569,7 +602,7 @@
       var x=k*L.cellW, top=L.mapH;
       if(k){ g.strokeStyle=css('--rule-soft'); g.beginPath(); g.moveTo(x+.5,top); g.lineTo(x+.5,top+L.donutH); g.stroke(); }
       g.fillStyle=css('--ink-2'); g.font=monoFont(10); g.textAlign='left';
-      g.fillText('POLE '+CARDS[k].label, x+L.pad, top+17);
+      g.fillText(T('pole')+CARDS[k].label, x+L.pad, top+17);
       g.fillStyle=css('--blind'); g.font='700 15px '+css('--display').split(',')[0].replace(/["']/g,'')+',sans-serif';
       g.textAlign='right'; g.fillText(document.getElementById('p-'+CARDS[k].id).textContent, x+L.cellW-L.pad, top+18);
       g.drawImage(document.getElementById('rose-'+CARDS[k].id), x+L.pad, top+L.headH, L.roseW, L.roseH);
@@ -577,8 +610,8 @@
     var fy=L.mapH+L.donutH;
     g.strokeStyle=css('--rule'); g.beginPath(); g.moveTo(0,fy+.5); g.lineTo(L.W,fy+.5); g.stroke();
     g.fillStyle=css('--ink-2'); g.font=monoFont(10); g.textAlign='left';
-    g.fillText(P.kmh.toFixed(0)+' km/h  ·  L '+P.L.toFixed(0)+' m  ·  spacing '+P.spacing.toFixed(0)+
-               ' m  ·  '+FPS+' fps  ·  two passes', L.pad, fy+17);
+    g.fillText(P.kmh.toFixed(0)+' km/h  ·  L '+P.L.toFixed(0)+' m  ·  '+T('spacing')+P.spacing.toFixed(0)+
+               ' m  ·  '+FPS+' fps  ·  '+T('passes'), L.pad, fy+17);
   }
 
   function setProgress(msg){ document.getElementById('btn-rec').textContent=msg; }
@@ -606,7 +639,7 @@
       compositeFrame();
       return recCtx.getImageData(0,0,Wp,Hp).data;
     }
-    setProgress('Rendering 0%');
+    setProgress(T('render')+'0%');
     chunk(N, function(i){
       var d=grab(i);
       for(var q=0;q<d.length;q+=8){          // every other pixel is plenty for the palette
@@ -614,7 +647,7 @@
         var c=((r>>3)<<10)|((g>>3)<<5)|(b>>3);
         hist[c]++; sR[c]+=r; sG[c]+=g; sB[c]+=b;
       }
-      if(i%6===0) setProgress('Rendering '+Math.round(i/N*50)+'%');
+      if(i%6===0) setProgress(T('render')+Math.round(i/N*50)+'%');
     }, function(){
       var pal=medianCut(hist,sR,sG,sB,256);
       var lut=buildLut(pal);
@@ -642,7 +675,7 @@
         w8(0x2C); w16(0); w16(0); w16(Wp); w16(Hp); w8(0);
         w8(minCode);
         lzwFrame(bytes, minCode, px);
-        if(i%4===0) setProgress('Encoding '+Math.round(50+i/N*50)+'%');
+        if(i%4===0) setProgress(T('encode')+Math.round(50+i/N*50)+'%');
       }, function(){
         w8(0x3B);
         gifBlob=new Blob([new Uint8Array(bytes)], {type:'image/gif'});
@@ -650,13 +683,13 @@
         document.getElementById('recimg').src=url;
         document.getElementById('recdl').href=url;
         document.getElementById('recinfo').textContent=
-          Wp+'×'+Hp+'  ·  '+N+' frames  ·  '+(gifBlob.size/1048576).toFixed(1)+' MB  ·  '+
+          Wp+'×'+Hp+'  ·  '+N+T('frames')+'  ·  '+(gifBlob.size/1048576).toFixed(1)+' MB  ·  '+
           P.kmh.toFixed(0)+' km/h, L '+P.L.toFixed(0)+' m, spacing '+P.spacing.toFixed(0)+' m';
         document.getElementById('recerr').textContent='';
         document.getElementById('recout').hidden=false;
         syncSaveBtn();
         recording=false; T=0; last=0;
-        var b=document.getElementById('btn-rec'); b.disabled=false; b.textContent='Record GIF';
+        var b=document.getElementById('btn-rec'); b.disabled=false; b.textContent=T('rec');
         saveGif(true);
       });
     });
@@ -665,17 +698,17 @@
   function saveGif(auto){
     if(!dlNs || !gifBlob) return;
     var b=document.getElementById('recsave'), err=document.getElementById('recerr');
-    if(b){ b.disabled=true; b.textContent='Saving…'; }
+    if(b){ b.disabled=true; b.textContent=T('saving'); }
     dlNs.save({filename:'ads-blind-spot.gif', data:gifBlob}).then(function(){
-      if(b){ b.textContent='Saved'; b.disabled=false; setTimeout(function(){ b.textContent='Save GIF'; },1800); }
+      if(b){ b.textContent=T('saved'); b.disabled=false; setTimeout(function(){ b.textContent=T('save'); },1800); }
     }).catch(function(e){
       var c=(e&&e.code)||'unavailable';
-      if(b){ b.disabled=false; b.textContent='Save GIF'; }
+      if(b){ b.disabled=false; b.textContent=T('save'); }
       if(auto && c==='declined'){ err.textContent=''; return; }
-      err.textContent = c==='declined' ? 'Save cancelled.'
-        : c==='rate_limited' ? 'A prompt is already open. Try again in a moment.'
-        : c==='too_large' ? 'GIF is over the 16 MB save limit.'
-        : 'Saving is not available in this view.';
+      err.textContent = c==='declined' ? T('eCancel')
+        : c==='rate_limited' ? T('eBusy')
+        : c==='too_large' ? T('eBig')
+        : T('eNone');
       if(b && c!=='declined' && c!=='rate_limited') b.hidden=true;
     });
   }
@@ -710,11 +743,11 @@
   bp.addEventListener('click',function(){
     if(recording) return;
     playing=!playing; bp.setAttribute('aria-pressed',String(playing));
-    bp.textContent=playing?'Pause':'Play';
+    bp.textContent=playing?T('pause'):T('play');
   });
   document.getElementById('btn-reset').addEventListener('click',function(){
     if(recording) return;
-    T=0; playing=true; bp.setAttribute('aria-pressed','true'); bp.textContent='Pause';
+    T=0; playing=true; bp.setAttribute('aria-pressed','true'); bp.textContent=T('pause');
   });
   document.getElementById('btn-rec').addEventListener('click',function(){
     if(recording) return;
@@ -723,6 +756,19 @@
   });
   document.getElementById('recsave').addEventListener('click',function(){ saveGif(false); });
 
+
+  function relabel(l){
+    document.title = l==='ko' ? 'ADS 사각지대 시뮬레이터' : 'ADS Blind Spot Simulator';
+    var bp=document.getElementById('btn-play');
+    bp.textContent = playing ? T('pause') : T('play');
+    document.getElementById('btn-reset').textContent = T('replay');
+    var br=document.getElementById('btn-rec');
+    if(!recording && !br.disabled) br.textContent = T('rec');
+    var bs=document.getElementById('recsave');
+    if(bs && !bs.disabled) bs.textContent = T('save');
+    refresh();
+  }
+  if(window.ADSLang) ADSLang.on(relabel);
 
   layout(); refresh();
   requestAnimationFrame(frame);
