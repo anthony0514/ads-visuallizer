@@ -53,6 +53,13 @@ At 40 km/h, 15 fps, L = 50 m, right-hand traffic:
 
 Deep-link a tab with a hash: `.../#blind-spot`, `.../#pole-tilt`.
 
+Both pages read English and Korean. The `ENG / 한국어` toggle sits in the shell's
+tab bar; `assets/lang.js` keeps one key in `localStorage` and mirrors it across the
+shell and both iframes over `postMessage`, so either page opened on its own picks up
+the same choice. Translated strings ship twice in the markup, each copy tagged with
+its own `lang` attribute, and CSS drops the one that is off; canvas and runtime
+strings come from a per-page table and redraw on switch. Korean is the default.
+
 Both pages and the shell share one light design system in `assets/theme.css`:
 a single palette, type scale and set of surfaces. The three scene hues carry the
 same meaning everywhere — blue for what is live, green for what is resolved,
