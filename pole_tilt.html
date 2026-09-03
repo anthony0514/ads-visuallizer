@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>왕복 두 장으로 전주 기울기 복원 — 데모와 이론</title>
+<style>
+  :root{
+    --ink:#12202F; --ink-2:#5A6B7D; --paper:#F7F9FB; --surface:#FFFFFF;
+    --rule:#DCE3EC; --blue:#1A6FD4; --amber:#D9822B; --green:#12946A; --warn:#BE4A45;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--paper); color:var(--ink);
+    font-family:"Apple SD Gothic Neo","Pretendard",-apple-system,BlinkMacSystemFont,"Segoe UI","Malgun Gothic",sans-serif;
+    font-size:14px; line-height:1.6; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1120px;margin:0 auto;padding:34px 24px 72px}
+
+  header{margin-bottom:18px}
+  h1{font-size:26px;font-weight:700;letter-spacing:-.02em;margin:0 0 8px}
+  header p{margin:0;color:var(--ink-2);max-width:64ch}
+
+  /* tabs */
+  .tabs{display:flex;gap:2px;border-bottom:2px solid var(--ink);margin-bottom:22px}
+  .tab{
+    font:inherit;font-size:14px;font-weight:600;padding:9px 18px;cursor:pointer;
+    background:transparent;border:1px solid transparent;border-bottom:0;color:var(--ink-2);
+    border-radius:5px 5px 0 0;margin-bottom:-2px;
+  }
+  .tab:hover{color:var(--blue)}
+  .tab[aria-selected="true"]{background:var(--ink);color:#fff}
+  .tab:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+  [role=tabpanel][hidden]{display:none}
+
+  .panel{background:var(--surface);border:1px solid var(--rule);border-radius:6px;overflow:hidden}
+  .panel-hd{padding:10px 14px;border-bottom:1px solid var(--rule);font-weight:600;font-size:13px;display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+  .panel-hd span{font-weight:400;color:var(--ink-2);font-size:12px}
+
+  #scene{display:block;width:100%;height:460px;cursor:grab;background:#fff}
+  #scene:active{cursor:grabbing}
+  .legend{display:flex;gap:18px;flex-wrap:wrap;font-size:12px;color:var(--ink-2);padding:9px 14px;border-top:1px solid var(--rule)}
+  .legend i{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+
+  .films{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+  .films canvas{display:block;width:100%;height:auto;background:#0E1621}
+  .lower{display:grid;grid-template-columns:1.35fr 1fr;gap:16px;margin-top:16px;align-items:start}
+  @media (max-width:820px){.films,.lower{grid-template-columns:1fr}}
+
+  .ctrl-body{padding:16px 18px}
+  .ctrl{margin-bottom:14px}
+  .ctrl:last-of-type{margin-bottom:0}
+  .ctrl label{display:flex;justify-content:space-between;gap:12px;font-size:13px;margin-bottom:4px}
+  .ctrl .val{font-variant-numeric:tabular-nums;color:var(--blue);font-weight:600}
+  input[type=range]{width:100%;accent-color:var(--blue);height:20px;margin:0}
+  input[type=range]:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+  .presets{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;padding-top:14px;border-top:1px solid var(--rule)}
+  button.act{font:inherit;font-size:12.5px;padding:6px 12px;border-radius:4px;cursor:pointer;border:1px solid var(--rule);background:#fff;color:var(--ink)}
+  button.act:hover{border-color:var(--blue);color:var(--blue)}
+  button.act:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+
+  .readout{padding:6px 14px 14px}
+  .row{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid #EDF1F6;font-size:13px}
+  .row b{font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
+  .key{color:var(--ink-2)}
+  .ok{color:var(--green)} .bad{color:var(--warn)}
+  .alert{margin-top:12px;padding:11px 13px;border-radius:5px;font-size:12.5px;line-height:1.55}
+  .alert.good{background:#EAF6F1;border:1px solid #BEE3D4;color:#0C6B4D}
+  .alert.risk{background:#FBECEB;border:1px solid #F0C9C6;color:#8E332F}
+
+  .notes{margin-top:30px;display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:26px}
+  .note h3{font-size:15px;margin:0 0 8px;padding-bottom:6px;border-bottom:1px solid var(--rule)}
+  .note p{margin:0 0 10px;color:#34465A;max-width:58ch}
+  .note p:last-child{margin-bottom:0}
+
+  /* theory */
+  .doc{max-width:74ch}
+  .doc h2{font-size:19px;margin:34px 0 10px;padding-bottom:7px;border-bottom:1px solid var(--rule)}
+  .doc h2:first-child{margin-top:0}
+  .doc h3{font-size:15px;margin:22px 0 6px}
+  .doc p{margin:0 0 12px;color:#25384D}
+  .doc ul{margin:0 0 12px;padding-left:20px;color:#25384D}
+  .doc li{margin-bottom:5px}
+  .fml{
+    margin:14px 0;padding:12px 16px;background:#F4F7FA;border-left:3px solid var(--blue);
+    border-radius:0 4px 4px 0;font-family:ui-monospace,SFMono-Regular,Menlo,"Courier New",monospace;
+    font-size:13.5px;line-height:1.9;color:#12202F;overflow-x:auto;white-space:pre;
+  }
+  .fml .cm{color:#6B7C8F}
+  code{background:#EEF2F7;padding:1px 5px;border-radius:3px;font-size:12.5px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  .callout{margin:16px 0;padding:13px 15px;border:1px solid var(--rule);border-radius:5px;background:#FCFDFE}
+  .callout b{display:block;margin-bottom:4px}
+  figure{margin:20px 0}
+  figcaption{font-size:12.5px;color:var(--ink-2);margin-top:8px}
+
+  /* refs */
+  .ref{border:1px solid var(--rule);border-radius:6px;background:var(--surface);padding:16px 18px;margin-bottom:12px}
+  .ref h4{margin:0 0 4px;font-size:14.5px}
+  .ref .meta{font-size:12.5px;color:var(--ink-2);margin-bottom:8px}
+  .ref .use{font-size:13px;color:#25384D;margin:0 0 8px}
+  .ref a{color:var(--blue);font-size:12.5px;word-break:break-all}
+  .refgroup{font-size:13px;font-weight:600;color:var(--ink-2);margin:26px 0 10px;padding-bottom:5px;border-bottom:1px solid var(--rule)}
+  .refgroup:first-child{margin-top:0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>왕복 두 장으로 전주 기울기를 복원할 수 있는가</h1>
+  <p>사진 한 장은 전주가 3D 어디에 있는지 말해주지 못한다. 다만 카메라 중심과 영상 속 전주 선분이 만드는 평면 하나는 확정한다. 갈 때 한 장, 올 때 한 장이면 평면이 둘이 되고, 전주 축은 두 평면의 교선이다.</p>
+</header>
+
+<div class="tabs" role="tablist">
+  <button class="tab" role="tab" id="t-demo"   aria-controls="p-demo"   aria-selected="true">인터랙티브 데모</button>
+  <button class="tab" role="tab" id="t-theory" aria-controls="p-theory" aria-selected="false">이론</button>
+  <button class="tab" role="tab" id="t-refs"   aria-controls="p-refs"   aria-selected="false">근거 자료</button>
+</div>
+
+<!-- ================= DEMO ================= -->
+<div role="tabpanel" id="p-demo" aria-labelledby="t-demo">
+
+  <div class="panel">
+    <div class="panel-hd">주행 장면 <span>드래그해서 회전, 휠로 확대</span></div>
+    <canvas id="scene"></canvas>
+    <div class="legend">
+      <span><i style="background:#D9822B"></i>갈 때 사진이 만든 평면</span>
+      <span><i style="background:#1A6FD4"></i>올 때 사진이 만든 평면</span>
+      <span><i style="background:#12946A"></i>두 평면의 교선, 복원된 축</span>
+      <span><i style="background:#39506A"></i>실제 전주</span>
+    </div>
+  </div>
+
+  <div class="films">
+    <div class="panel">
+      <div class="panel-hd">갈 때 찍은 한 장 <span>Cam A</span></div>
+      <canvas id="camA" width="760" height="980"></canvas>
+    </div>
+    <div class="panel">
+      <div class="panel-hd">올 때 찍은 한 장 <span>Cam B</span></div>
+      <canvas id="camB" width="760" height="980"></canvas>
+    </div>
+  </div>
+
+  <div class="lower">
+    <div class="panel">
+      <div class="panel-hd">촬영 조건</div>
+      <div class="ctrl-body">
+        <div class="ctrl">
+          <label>전주 기울기 <span class="val" id="vTilt">6.0°</span></label>
+          <input type="range" id="sTilt" min="0" max="15" step="0.1" value="6">
+        </div>
+        <div class="ctrl">
+          <label>기울어진 방향 <span class="val" id="vAz">90°</span></label>
+          <input type="range" id="sAz" min="0" max="360" step="1" value="90">
+        </div>
+        <div class="ctrl">
+          <label>왕복 차선 간격 <span class="val" id="vLane">3.5 m</span></label>
+          <input type="range" id="sLane" min="0" max="8" step="0.1" value="3.5">
+        </div>
+        <div class="ctrl">
+          <label>두 촬영 지점의 앞뒤 어긋남 <span class="val" id="vGap">6.0 m</span></label>
+          <input type="range" id="sGap" min="0" max="14" step="0.1" value="6">
+        </div>
+        <div class="ctrl">
+          <label>영상에서 전주 선을 딴 오차 <span class="val" id="vNoise">0.6 px</span></label>
+          <input type="range" id="sNoise" min="0" max="3" step="0.05" value="0.6">
+        </div>
+        <div class="presets">
+          <button class="act" data-preset="good">정상 주행 조건</button>
+          <button class="act" data-preset="degen">같은 지점에서 두 장</button>
+          <button class="act" data-preset="noisy">선이 잘 안 잡히는 현장</button>
+          <button class="act" id="reroll">노이즈 다시 뽑기</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-hd">복원 결과</div>
+      <div class="readout">
+        <div class="row"><span class="key">실제 기울기 / 방향</span><b id="rTrue">–</b></div>
+        <div class="row"><span class="key">복원한 기울기 / 방향</span><b id="rEst">–</b></div>
+        <div class="row"><span class="key">축 방향 오차</span><b id="rErr">–</b></div>
+        <div class="row"><span class="key">두 평면이 만나는 각</span><b id="rDihedral">–</b></div>
+        <div class="row"><span class="key">같은 조건 200회 반복 오차 RMS</span><b id="rRms">–</b></div>
+        <div id="verdict" class="alert good"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="notes">
+    <div class="note">
+      <h3>왜 두 장이면 되는가</h3>
+      <p>카메라 중심과 영상 속 전주 선분을 이으면 3D 공간에 부채꼴 평면이 하나 생긴다. 전주 축은 반드시 이 평면 위에 있다. 다만 그 평면 안 어디인지는 아직 모른다.</p>
+      <p>다른 위치에서 한 장을 더 찍으면 평면이 하나 더 생긴다. 축은 두 평면 모두에 들어있으므로 두 평면의 교선이 곧 전주 축이다. 교선은 방향과 위치를 함께 준다.</p>
+    </div>
+    <div class="note">
+      <h3>언제 깨지는가</h3>
+      <p>두 평면이 거의 겹치면 교선이 정해지지 않는다. 두 촬영 지점과 전주가 한 평면 위에 놓일 때 그렇다. 앞뒤 어긋남을 0으로 두고 전주를 도로 쪽으로 기울여보면 교차각이 0으로 내려가면서 복원값이 무너진다.</p>
+      <p>주행 촬영에서는 피하기 쉬운 조건이다. 갈 때와 올 때의 촬영 지점을 앞뒤로 몇 미터만 어긋나게 잡아도 교차각이 충분히 벌어진다.</p>
+    </div>
+    <div class="note">
+      <h3>남는 문제</h3>
+      <p>이 화면은 전주 선분을 이미 정확히 땄다고 가정한다. 실제로는 전주 표면이 밋밋해 그 단계가 흔들린다. 노이즈 슬라이더가 그 부분이고, 교차각이 좁을수록 같은 오차가 더 크게 증폭된다.</p>
+      <p>각도는 스케일 없이도 나온다. 반면 전주까지의 거리와 길이를 미터로 읽으려면 두 촬영 지점 사이 거리를 GPS나 오도메트리로 따로 넣어줘야 한다.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ================= THEORY ================= -->
+<div role="tabpanel" id="p-theory" aria-labelledby="t-theory" hidden>
+<div class="doc">
+
+<h2>1. 무엇을 구하려는가</h2>
+<p>전주를 3D 직선 <code>L</code>로 모델링한다. 3D 직선은 자유도가 4다. 우리가 실제로 원하는 건 그중 방향 벡터 <code>d</code> 하나이고, 여기서 두 수치를 뽑는다.</p>
+<div class="fml">θ = arccos( |d_z| )        <span class="cm">연직과 이루는 각, 기울기</span>
+φ = atan2( d_y , d_x )     <span class="cm">기운 방위</span></div>
+<p>기울기 판정에는 방향만 있으면 된다. 위치와 길이는 별개 문제이고 뒤에서 다시 다룬다.</p>
+
+<h2>2. 사진 한 장이 주는 것</h2>
+<p>카메라 중심을 <code>C</code>, 회전을 <code>R</code>, 내부 파라미터를 <code>K</code>라 하자. 영상에서 전주의 밑동과 꼭대기를 픽셀 <code>a</code>, <code>b</code>로 찍으면 각각의 시선 벡터는 이렇게 된다.</p>
+<div class="fml">r_a = normalize( R · K⁻¹ · [a; 1] )
+r_b = normalize( R · K⁻¹ · [b; 1] )</div>
+<p>두 시선과 카메라 중심이 만드는 평면이 역투영 평면 <code>π</code>다. 법선과 평면식은 다음과 같다.</p>
+<div class="fml">n = normalize( r_a × r_b )
+π :  n · ( X − C ) = 0</div>
+<p>전주 축은 이 평면 위에 반드시 놓인다. 한 장은 직선의 4 자유도 중 2개를 고정한다. 남은 2개는 평면 안에서 어디에 어떤 각도로 놓였는지에 대한 자유도이고, 한 장으로는 절대 결정되지 않는다. 사진에서 잰 것은 선분의 위치가 아니라 방향뿐이기 때문이다.</p>
+
+<div class="callout">
+  <b>왜 점이 아니라 선을 쓰는가</b>
+  전주 표면은 콘크리트 원기둥이라 텍스처가 거의 없다. 대응점 매칭이 잘 안 붙는다. 반면 하늘이나 배경과의 실루엣 경계는 어느 각도에서 봐도 안정적으로 나온다. 선 특징은 점 특징보다 매칭 오류와 가림, 영상 불확실성에 강하다는 점이 선 삼각측량 문헌에서 반복적으로 지적된다.
+</div>
+
+<h2>3. 두 장이면 교선이 곧 축이다</h2>
+<p>다른 위치에서 한 장을 더 찍으면 평면 <code>π₁</code>, <code>π₂</code>가 생긴다. 전주 축은 두 평면 모두에 들어있으므로 교선이 곧 축이다.</p>
+<div class="fml"><span class="cm">방향</span>
+u = n₁ × n₂
+d = u / |u|
+
+<span class="cm">교선 위의 한 점  (c_i = n_i · C_i)</span>
+p = [ c₁ ( n₂ × u ) + c₂ ( u × n₁ ) ] / |u|²
+
+<span class="cm">복원된 직선</span>
+L(t) = p + t · d</div>
+<p>이건 3D 직선을 두 평면의 만남으로 표현하는 Plücker 이중 표현 그대로다. 두 장에서 직선을 복원하는 문제는 일반적으로 유일해를 가진다.</p>
+<p>데모의 노이즈를 0으로 두면 축 방향 오차가 10⁻⁶도, 위치 오차가 10⁻¹⁵ m 수준으로 떨어진다. 근사가 아니라 닫힌 해다.</p>
+
+<h2>4. 스케일은 어디서 오는가</h2>
+<p><code>d</code>는 두 법선의 외적이므로 크기에 무관하다. 두 카메라 사이 거리를 몰라도 <b>기울기 각도와 방위는 그대로 나온다</b>. 필요한 건 두 카메라의 상대 <b>회전</b>과 베이스라인 <b>방향</b>이다.</p>
+<p>반면 교선 위의 점 <code>p</code>는 <code>C₁</code>, <code>C₂</code>에 선형으로 의존한다. 베이스라인을 두 배로 잘못 넣으면 전주 위치와 길이도 두 배가 된다. 전주까지 거리, 전주 길이, 근입 깊이 같은 미터 단위 수치를 쓰려면 GPS나 휠 오도메트리로 베이스라인 길이를 넣어야 한다.</p>
+<div class="callout">
+  <b>정리</b>
+  각도는 스케일 프리, 위치와 길이는 스케일 의존. 기울기만 판정할 거라면 절대 스케일 없이도 성립한다.
+</div>
+
+<h2>5. 언제 깨지는가</h2>
+<p>해가 존재하려면 <code>u = n₁ × n₂ ≠ 0</code>이어야 한다. 즉 두 평면이 달라야 한다.</p>
+<div class="fml">축퇴 조건:  n₁ ∥ n₂   ⟺   π₁ = π₂
+        ⟺   직선 L 과 베이스라인 C₁C₂ 가 한 평면 위에 있음</div>
+<p>가장 잘 알려진 형태는 카메라가 직선의 방향을 따라 이동하는 경우다. 이때 두 역투영 평면이 겹쳐 직선을 복원할 수 없다. 차선 표시나 연석처럼 진행 방향과 나란한 선이 주행 중 삼각측량되지 않는 이유가 이것이다.</p>
+<p>전주는 연직에 가깝고 차량은 수평으로 움직이므로 이 형태는 일어나지 않는다. 실제로 조심할 건 다른 형태다. <b>왕복 두 촬영 지점이 앞뒤로 같은 위치</b>면 베이스라인이 도로를 가로지르는 방향이 되고, 이때 전주가 그 방향으로 기울면 전주와 베이스라인이 한 평면에 놓인다. 데모의 두 번째 프리셋이 정확히 이 조건이고, 교차각이 0으로 떨어지면서 해가 사라진다.</p>
+<p>대응은 단순하다. 갈 때와 올 때의 촬영 지점을 앞뒤로 몇 미터만 어긋나게 잡으면 된다. 주행 영상이라면 프레임을 고르는 문제라 비용이 들지 않는다.</p>
+
+<h2>6. 조건수: 얼마나 안전한 여유인가</h2>
+<p>축퇴는 0이냐 아니냐의 이분법이 아니다. 두 평면이 만나는 각을 <code>α</code>라 하면</p>
+<div class="fml">α = arccos( | n₁ · n₂ | )</div>
+<p>영상에서 선을 딴 오차 <code>δ</code>가 축 방향 오차로 옮겨갈 때 대략 <code>δ / sin α</code>로 증폭된다. <code>α</code>가 60도면 거의 그대로 전달되고, 10도면 대여섯 배로 커진다. 아래 그림이 그 감각이다.</p>
+
+<figure>
+<svg viewBox="0 0 660 230" width="100%" role="img" aria-label="두 평면의 교차각이 넓을 때와 좁을 때의 불확실성 비교">
+  <defs>
+    <clipPath id="cA"><rect x="10" y="20" width="310" height="190"/></clipPath>
+    <clipPath id="cB"><rect x="340" y="20" width="310" height="190"/></clipPath>
+  </defs>
+
+  <!-- panel A -->
+  <g clip-path="url(#cA)">
+    <g transform="translate(165,115)">
+      <g transform="rotate(35)"><rect x="-150" y="-14.4" width="300" height="28.8" fill="#D9822B" opacity="0.20"/></g>
+      <g transform="rotate(-35)"><rect x="-150" y="-14.4" width="300" height="28.8" fill="#1A6FD4" opacity="0.20"/></g>
+      <g transform="rotate(35)"><line x1="-150" y1="0" x2="150" y2="0" stroke="#D9822B" stroke-width="1.6"/></g>
+      <g transform="rotate(-35)"><line x1="-150" y1="0" x2="150" y2="0" stroke="#1A6FD4" stroke-width="1.6"/></g>
+      <polygon points="0,-17.6 25.1,0 0,17.6 -25.1,0" fill="#12946A" opacity="0.75"/>
+      <path d="M 42 0 A 42 42 0 0 0 34.4 -24.1" fill="none" stroke="#5A6B7D" stroke-width="1.2"/>
+      <text x="50" y="-8" font-size="13" fill="#5A6B7D" font-family="sans-serif">α = 70°</text>
+    </g>
+  </g>
+  <text x="165" y="215" font-size="13" fill="#12202F" text-anchor="middle" font-family="sans-serif">교차각이 넓으면 교선이 좁게 확정된다</text>
+
+  <!-- panel B -->
+  <g clip-path="url(#cB)">
+    <g transform="translate(495,115)">
+      <g transform="rotate(7)"><rect x="-150" y="-14.4" width="300" height="28.8" fill="#D9822B" opacity="0.20"/></g>
+      <g transform="rotate(-7)"><rect x="-150" y="-14.4" width="300" height="28.8" fill="#1A6FD4" opacity="0.20"/></g>
+      <g transform="rotate(7)"><line x1="-150" y1="0" x2="150" y2="0" stroke="#D9822B" stroke-width="1.6"/></g>
+      <g transform="rotate(-7)"><line x1="-150" y1="0" x2="150" y2="0" stroke="#1A6FD4" stroke-width="1.6"/></g>
+      <polygon points="0,-14.5 118,0 0,14.5 -118,0" fill="#BE4A45" opacity="0.70"/>
+      <text x="20" y="-34" font-size="13" fill="#5A6B7D" font-family="sans-serif">α = 14°</text>
+    </g>
+  </g>
+  <text x="495" y="215" font-size="13" fill="#12202F" text-anchor="middle" font-family="sans-serif">좁으면 같은 오차가 길게 늘어난다</text>
+
+  <line x1="330" y1="20" x2="330" y2="196" stroke="#DCE3EC" stroke-width="1"/>
+</svg>
+<figcaption>두 띠의 두께는 영상에서 선을 딴 오차, 겹치는 영역은 그로 인한 해의 불확실성이다. 두 그림의 띠 두께는 같다. 교차각만 다르다.</figcaption>
+</figure>
+
+<p>이 데모로 직접 확인할 수 있다. 기울기 6도, 차선 간격 3.5 m, 선 추출 오차 0.6 px을 고정하고 앞뒤 어긋남만 바꾸며 각 400회씩 돌린 결과다.</p>
+
+<div class="fml">어긋남   교차각 α    오차 RMS    RMS × sin α
+ 0.5 m    4.1°       2.35°       0.167
+ 1.0 m    8.1°       1.18°       0.166
+ 2.0 m   16.0°       0.60°       0.167
+ 4.0 m   31.3°       0.33°       0.171
+ 6.0 m   45.3°       0.25°       0.177
+10.0 m   69.2°       0.21°       0.198</div>
+
+<p>마지막 열이 α가 좁은 구간에서 거의 상수로 유지된다. 오차가 <code>1 / sin α</code>로 증폭된다는 관계가 그대로 맞는다는 뜻이다. α가 커지면 다른 오차원이 지배하기 시작해 값이 조금씩 벌어진다.</p>
+
+<h2>7. 실제 파이프라인으로 옮기면</h2>
+<ul>
+  <li>전주 세그멘테이션 또는 선분 검출로 각 프레임에서 전주 실루엣의 중심선을 딴다.</li>
+  <li>같은 전주를 두 프레임에 걸쳐 대응시킨다. 왕복 주행이면 시간 간격이 크므로 위치 기반 매칭이 필요하다.</li>
+  <li>차량 자세로부터 각 프레임의 <code>R</code>, <code>C</code>를 얻는다. 여기의 회전 오차가 그대로 기울기 오차로 넘어간다.</li>
+  <li>두 평면의 교선을 닫힌 해로 계산하고, 교차각 <code>α</code>로 신뢰도를 함께 낸다.</li>
+  <li>세 장 이상이면 평면들이 한 직선에서 정확히 만나지 않으므로 최소제곱 또는 Plücker 제약을 건 최적화로 푼다.</li>
+</ul>
+<p>마지막 항목이 실무에서 중요하다. 왕복 주행이면 전주 하나당 프레임이 두 장이 아니라 수십 장이다. 교차각이 넓은 조합만 골라 쓰거나 전부를 최적화에 넣으면 두 장짜리 최악 조건을 대부분 피할 수 있다.</p>
+
+<h2>8. 한계</h2>
+<ul>
+  <li>카메라 자세 오차가 곧 결과 오차다. 기울기 1도를 다투는데 자세가 1도 틀리면 의미가 없다.</li>
+  <li>전주가 완전한 직선이라는 가정. 실제 전주는 하중으로 휘어 있을 수 있고, 이때 직선 피팅은 평균 기울기를 준다.</li>
+  <li>가림. 나무나 차량에 밑동이 가려지면 선분의 끝점이 틀어지고, 특히 밑동 쪽 오차가 각도에 크게 작용한다.</li>
+  <li>미터 단위 결과는 베이스라인 실측 정확도에 직접 묶인다.</li>
+</ul>
+
+</div>
+</div>
+
+<!-- ================= REFS ================= -->
+<div role="tabpanel" id="p-refs" aria-labelledby="t-refs" hidden>
+<div class="doc" style="max-width:82ch">
+
+<p>아래 항목은 위 이론 탭의 각 주장을 어디서 확인할 수 있는지 정리한 것이다. 링크는 공개 원문이거나 공개 초록이다.</p>
+
+<div class="refgroup">선 삼각측량의 기본 구성</div>
+
+<div class="ref">
+  <h4>Multiple View Geometry in Computer Vision</h4>
+  <div class="meta">Hartley &amp; Zisserman, Cambridge University Press, 2판 2004</div>
+  <p class="use">이미지 직선의 역투영이 카메라 중심을 지나는 평면이 된다는 기본 결과, 그리고 두 시점 직선 복원의 표준 서술. 이론 탭 2절과 3절의 출발점이다. 표준 교과서라 온라인 원문 링크는 두지 않는다.</p>
+</div>
+
+<div class="ref">
+  <h4>Structure-from-motion using lines: Representation, triangulation, and bundle adjustment</h4>
+  <div class="meta">Bartoli &amp; Sturm, Computer Vision and Image Understanding 100(3), 2005</div>
+  <p class="use">3D 직선을 두 평면의 만남으로 표현하는 이중 표현과, 두 시점에서 직선을 복원하면 일반적으로 유일해를 가진다는 서술. 여러 장으로 갈 때 필요한 Plücker 제약과 보정 절차, 번들 조정까지 이어진다. 이론 탭 3절과 7절의 근거.</p>
+  <a href="http://perception.inrialpes.fr/Publications/2005/BS05/BartoliSturm-cviu05.pdf" target="_blank" rel="noopener">perception.inrialpes.fr/Publications/2005/BS05/BartoliSturm-cviu05.pdf</a>
+</div>
+
+<div class="ref">
+  <h4>Algebraic Error Based Triangulation and Metric of Lines</h4>
+  <div class="meta">Wu, Zhang, Zhang, PLoS ONE 10(7), 2015</div>
+  <p class="use">두 장일 때는 역투영 평면들의 교선이 곧 답이라 문제가 이론적으로 자명하고, 세 장 이상이면 측정 오차 때문에 평면들이 한 직선에서 만나지 않아 최적화가 필요해진다는 점을 명시한다. 또한 선 특징이 점 특징보다 매칭 오류와 가림, 영상 불확실성에 강하다는 근거. 이론 탭 2절 콜아웃과 7절.</p>
+  <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4517892/" target="_blank" rel="noopener">ncbi.nlm.nih.gov/pmc/articles/PMC4517892/</a>
+</div>
+
+<div class="refgroup">축퇴 조건</div>
+
+<div class="ref">
+  <h4>PL-VIWO: A Lightweight and Robust Point-Line Monocular Visual Inertial Wheel Odometry</h4>
+  <div class="meta">arXiv:2503.00551</div>
+  <p class="use">평면 교차 방식의 직선 삼각측량이 축퇴 운동에서 실패한다는 점을 그림과 함께 정리한다. 카메라가 직선 방향과 나란히 움직이면 두 평면이 겹쳐 복원이 불가능해지고, 이는 차선이나 연석처럼 진행 방향과 나란한 선에서 지상 로봇 주행 중 흔히 발생한다. 이론 탭 5절의 직접 근거.</p>
+  <a href="https://arxiv.org/pdf/2503.00551" target="_blank" rel="noopener">arxiv.org/pdf/2503.00551</a>
+</div>
+
+<div class="ref">
+  <h4>PL-VIWO2: A Lightweight, Fast and Robust Visual-Inertial-Wheel Odometry Using Points and Lines</h4>
+  <div class="meta">arXiv:2509.21563</div>
+  <p class="use">축퇴를 카메라들이 한 평면 안에 머무는 상황으로 명시하고, 대응책으로 점 위 직선 정보와 방향 정보를 함께 쓰는 초기화를 제안한다. 또 관측이 여러 장일 때 기준 평면과 나머지 평면들의 교선을 구해 방향과 법선을 평균하는 방식을 설명한다. 이론 탭 5절과 7절 마지막 항목.</p>
+  <a href="https://arxiv.org/pdf/2509.21563" target="_blank" rel="noopener">arxiv.org/pdf/2509.21563</a>
+</div>
+
+<div class="ref">
+  <h4>Algebraic Relations and Triangulation of Unlabeled Image Points</h4>
+  <div class="meta">arXiv:1707.08722</div>
+  <p class="use">복원 대상이 베이스라인과 한 평면에 놓이면 두 시점 삼각측량이 모호해진다는 결과를 명제로 서술한다. 대상이 점일 때의 결과지만, 축퇴가 베이스라인과의 공면 조건에서 나온다는 구조는 직선 복원과 같다. 이론 탭 5절의 보조 근거.</p>
+  <a href="https://arxiv.org/pdf/1707.08722" target="_blank" rel="noopener">arxiv.org/pdf/1707.08722</a>
+</div>
+
+<div class="ref">
+  <h4>Avoiding Degeneracy for Monocular Visual SLAM with Point and Line Features</h4>
+  <div class="meta">arXiv:2103.01501</div>
+  <p class="use">직선 특징의 자유도가 4라는 점과 Plücker 표현이 삼각측량에 유리한 이유를 정리한다. 축퇴 회피를 SLAM 파이프라인 수준에서 다룬 사례. 이론 탭 1절과 5절.</p>
+  <a href="https://arxiv.org/pdf/2103.01501" target="_blank" rel="noopener">arxiv.org/pdf/2103.01501</a>
+</div>
+
+<div class="refgroup">전주 기울기 응용 사례</div>
+
+<div class="ref">
+  <h4>Automatic Utility Pole Inclination Angle Measurement Using Unmanned Aerial Vehicle and Deep Learning</h4>
+  <div class="meta">Alam 외, NSF 공개본</div>
+  <p class="use">딥러닝으로 전주를 검출·분할한 뒤 컴퓨터 비전으로 기울기 각도를 계산한다. 서로 다른 기상 조건에서 촬영한 64장 84개 전주로 평가해 분할 정확도 93.74퍼센트, 평균 기울기 오차 0.59도를 보고한다. 기울기 각도를 영상에서 뽑는 접근의 실측 성능 기준선으로 쓸 수 있다.</p>
+  <a href="https://par.nsf.gov/servlets/purl/10114064" target="_blank" rel="noopener">par.nsf.gov/servlets/purl/10114064</a>
+</div>
+
+<div class="ref">
+  <h4>Utility Pole Fire Risk Inspection from 2D Street-Side Images</h4>
+  <div class="meta">arXiv:2406.13158</div>
+  <p class="use">스트리트뷰 한 장에서 전주 선의 기울기와 절편으로 각도를 계산하는 접근을 시도하고, 카메라 각도 변화에 취약해 전주에 없는 기울기가 생기며 수목 이격은 판정할 수 없다고 보고한다. 또 깊이 추정 모델을 쓰면 이격은 재도 기울기 정보는 얻지 못한다고 명시한다. 단안 한 장 접근의 한계를 보여주는 자료이자 왜 두 장이 필요한지에 대한 반대 근거.</p>
+  <a href="https://arxiv.org/html/2406.13158v1" target="_blank" rel="noopener">arxiv.org/html/2406.13158v1</a>
+</div>
+
+<div class="callout" style="margin-top:26px">
+  <b>보완이 필요한 부분</b>
+  전주 기울기의 규정상 허용 한계는 사업자와 국가 기준마다 다르고 공개 자료에서 단일 수치를 확인하지 못했다. 국내 판정 기준이 필요하면 한전 배전 관련 사규나 발주처 사양서를 직접 확인해야 한다.
+</div>
+
+</div>
+</div>
+
+</div>
+
+<script>
+/* ---------------- tabs ---------------- */
+const tabs=[...document.querySelectorAll('.tab')];
+function selectTab(btn){
+  tabs.forEach(t=>{
+    const sel = t===btn;
+    t.setAttribute('aria-selected', sel?'true':'false');
+    document.getElementById(t.getAttribute('aria-controls')).hidden = !sel;
+  });
+  if(btn.id==='t-demo') render();
+}
+tabs.forEach(t=>t.addEventListener('click',()=>selectTab(t)));
+
+/* ---------------- math ---------------- */
+const V = {
+  sub:(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]],
+  add:(a,b)=>[a[0]+b[0],a[1]+b[1],a[2]+b[2]],
+  mul:(a,s)=>[a[0]*s,a[1]*s,a[2]*s],
+  dot:(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2],
+  cross:(a,b)=>[a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]],
+  len:a=>Math.hypot(a[0],a[1],a[2]),
+  norm:a=>{const l=Math.hypot(a[0],a[1],a[2])||1e-12;return [a[0]/l,a[1]/l,a[2]/l];}
+};
+const DEG=180/Math.PI, RAD=Math.PI/180;
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return ((t^t>>>14)>>>0)/4294967296;};}
+function gaussPair(rng){const u=Math.max(rng(),1e-9),v=rng();const r=Math.sqrt(-2*Math.log(u));return [r*Math.cos(2*Math.PI*v), r*Math.sin(2*Math.PI*v)];}
+
+const POLE_H=9.0, ROAD_OFFSET=6.0, CAM_H=1.6;
+const FPX=360, IMW=760, IMH=980;
+const P={tilt:6, az:90, lane:3.5, gap:6, noise:0.6};
+let noiseSeed=7;
+
+function basis(eye,target){
+  const f=V.norm(V.sub(target,eye));
+  let r=V.cross(f,[0,0,1]);
+  if(V.len(r)<1e-6) r=[1,0,0];
+  r=V.norm(r);
+  return {f,r,u:V.cross(r,f)};
+}
+function projectPix(p,eye,B,f,w,h){
+  const v=V.sub(p,eye), zc=V.dot(v,B.f);
+  if(zc<=0.05) return null;
+  return {x:w/2+f*V.dot(v,B.r)/zc, y:h/2-f*V.dot(v,B.u)/zc, z:zc};
+}
+function rayFromPix(px,py,B,f,w,h){
+  return V.norm(V.add(V.add(V.mul(B.r,(px-w/2)/f), V.mul(B.u,(h/2-py)/f)), B.f));
+}
+function solve(p, seed){
+  const th=p.tilt*RAD, az=p.az*RAD;
+  const d=[Math.sin(th)*Math.cos(az), Math.sin(th)*Math.sin(az), Math.cos(th)];
+  const P0=[0,0,0], P1=V.mul(d,POLE_H), mid=V.mul(d,POLE_H/2);
+  const CA=[-p.gap/2, ROAD_OFFSET, CAM_H];
+  const CB=[ p.gap/2, ROAD_OFFSET+p.lane, CAM_H];
+  const BA=basis(CA,mid), BB=basis(CB,mid);
+  const rng=mulberry32(seed);
+  function measure(C,B){
+    const a=projectPix(P0,C,B,FPX,IMW,IMH);
+    const b=projectPix(P1,C,B,FPX,IMW,IMH);
+    if(!a||!b) return {n:null};
+    const [g1,g2]=gaussPair(rng), [g3,g4]=gaussPair(rng);
+    const s=p.noise;
+    const na={x:a.x+g1*s, y:a.y+g2*s}, nb={x:b.x+g3*s, y:b.y+g4*s};
+    return {n:V.norm(V.cross(rayFromPix(na.x,na.y,B,FPX,IMW,IMH), rayFromPix(nb.x,nb.y,B,FPX,IMW,IMH))),
+            img:{a,b,na,nb}};
+  }
+  const MA=measure(CA,BA), MB=measure(CB,BB);
+  if(!MA.n||!MB.n) return null;
+  const u=V.cross(MA.n,MB.n), uu=V.dot(u,u);
+  const dihedral=Math.asin(clamp(V.len(u),0,1))*DEG;
+  let est=null, point=null;
+  if(uu>1e-14){
+    est=V.norm(u); if(est[2]<0) est=V.mul(est,-1);
+    const c1=V.dot(MA.n,CA), c2=V.dot(MB.n,CB);
+    point=V.mul(V.add(V.mul(V.cross(MB.n,u),c1), V.mul(V.cross(u,MA.n),c2)), 1/uu);
+  }
+  return {d,P0,P1,mid,CA,CB,BA,BB,imgA:MA.img,imgB:MB.img,est,point,dihedral};
+}
+function rmsError(p){
+  if(p.noise<=0) return 0;
+  const truth=solve(Object.assign({},p,{noise:0}),1);
+  if(!truth) return NaN;
+  let acc=0;
+  for(let i=0;i<200;i++){
+    const s=solve(p, 100003+i*977);
+    if(!s||!s.est){acc+=8100;continue;}
+    acc += Math.pow(Math.acos(clamp(V.dot(truth.d,s.est),-1,1))*DEG, 2);
+  }
+  return Math.sqrt(acc/200);
+}
+
+/* ---------------- scene ---------------- */
+const scene=document.getElementById('scene');
+const sctx=scene.getContext('2d');
+const view={az:-2.15, el:0.30, R:33};
+let dragging=false,lastX=0,lastY=0;
+scene.addEventListener('pointerdown',e=>{dragging=true;lastX=e.clientX;lastY=e.clientY;scene.setPointerCapture(e.pointerId);});
+scene.addEventListener('pointerup',()=>{dragging=false;});
+scene.addEventListener('pointercancel',()=>{dragging=false;});
+scene.addEventListener('pointermove',e=>{
+  if(!dragging) return;
+  view.az -= (e.clientX-lastX)*0.006;
+  view.el = clamp(view.el+(e.clientY-lastY)*0.005, 0.05, 1.30);
+  lastX=e.clientX; lastY=e.clientY; render();
+});
+scene.addEventListener('wheel',e=>{e.preventDefault();view.R=clamp(view.R+e.deltaY*0.03,14,70);render();},{passive:false});
+
+function drawScene(S){
+  const dpr=window.devicePixelRatio||1;
+  const rect=scene.getBoundingClientRect();
+  const w=rect.width, h=rect.height;
+  if(w<10||h<10) return;
+  scene.width=Math.round(w*dpr); scene.height=Math.round(h*dpr);
+  sctx.setTransform(dpr,0,0,dpr,0,0);
+
+  const target=[0,3.6,3.2];
+  const ce=Math.cos(view.el), se=Math.sin(view.el);
+  const eye=V.add(target,[view.R*ce*Math.cos(view.az), view.R*ce*Math.sin(view.az), view.R*se]);
+  const B=basis(eye,target);
+  const F=w*1.25;
+  const pr=p=>projectPix(p,eye,B,F,w,h);
+
+  const g=sctx.createLinearGradient(0,0,0,h);
+  g.addColorStop(0,'#FFFFFF'); g.addColorStop(1,'#EDF1F6');
+  sctx.fillStyle=g; sctx.fillRect(0,0,w,h);
+
+  const line=(a,b,color,width,dash)=>{
+    const A=pr(a),C=pr(b); if(!A||!C) return;
+    sctx.save(); sctx.strokeStyle=color; sctx.lineWidth=width; sctx.lineCap='round';
+    if(dash) sctx.setLineDash(dash);
+    sctx.beginPath(); sctx.moveTo(A.x,A.y); sctx.lineTo(C.x,C.y); sctx.stroke(); sctx.restore();
+  };
+  const poly=(pts,fill,stroke)=>{
+    const q=pts.map(pr); if(q.some(v=>!v)) return;
+    sctx.beginPath(); q.forEach((v,i)=> i?sctx.lineTo(v.x,v.y):sctx.moveTo(v.x,v.y));
+    sctx.closePath();
+    if(fill){sctx.fillStyle=fill;sctx.fill();}
+    if(stroke){sctx.strokeStyle=stroke;sctx.lineWidth=1.2;sctx.stroke();}
+  };
+
+  for(let x=-20;x<=20;x+=4) line([x,-6,0],[x,20,0],'#E4EAF1',1);
+  for(let y=-6;y<=20;y+=4) line([-20,y,0],[20,y,0],'#E4EAF1',1);
+
+  poly([[-20,ROAD_OFFSET-2.2,0],[20,ROAD_OFFSET-2.2,0],[20,ROAD_OFFSET+P.lane+2.2,0],[-20,ROAD_OFFSET+P.lane+2.2,0]],'rgba(60,80,105,0.07)',null);
+  line([-20,ROAD_OFFSET,0],[20,ROAD_OFFSET,0],'#B9C5D4',1.4,[7,7]);
+  line([-20,ROAD_OFFSET+P.lane,0],[20,ROAD_OFFSET+P.lane,0],'#B9C5D4',1.4,[7,7]);
+
+  const K=1.3;
+  const wedge=(C,fill,stroke)=>poly([C, V.add(C,V.mul(V.sub(S.P0,C),K)), V.add(C,V.mul(V.sub(S.P1,C),K))], fill, stroke);
+  wedge(S.CA,'rgba(217,130,43,0.20)','rgba(217,130,43,0.60)');
+  wedge(S.CB,'rgba(26,111,212,0.20)','rgba(26,111,212,0.60)');
+
+  line([0,0,0],[0,0,POLE_H],'#A8B6C6',1.2,[4,5]);
+  line(S.P0,S.P1,'#39506A',7);
+
+  if(S.est&&S.point){
+    const dz=S.est[2]||1e-9;
+    const t0=(0-S.point[2])/dz, t1=(POLE_H-S.point[2])/dz;
+    if(Math.abs(t0)<500&&Math.abs(t1)<500)
+      line(V.add(S.point,V.mul(S.est,t0)), V.add(S.point,V.mul(S.est,t1)), '#12946A', 3.5, [10,6]);
+  }
+
+  const camMark=(C,color,label)=>{
+    const c=pr(C); if(!c) return;
+    line([C[0],C[1],0],C,'#BCC7D5',1,[3,4]);
+    sctx.beginPath(); sctx.arc(c.x,c.y,6,0,Math.PI*2);
+    sctx.fillStyle=color; sctx.fill();
+    sctx.strokeStyle='#fff'; sctx.lineWidth=2; sctx.stroke();
+    sctx.fillStyle='#12202F'; sctx.font='600 12px "Apple SD Gothic Neo",sans-serif';
+    sctx.fillText(label,c.x+10,c.y-8);
+  };
+  camMark(S.CA,'#D9822B','갈 때');
+  camMark(S.CB,'#1A6FD4','올 때');
+
+  const arrow=(y,dir,color)=>{
+    const a=[dir*8,y,0.05], b=[dir*12,y,0.05];
+    line(a,b,color,2);
+    const tip=pr(b), tail=pr(a); if(!tip||!tail) return;
+    const ang=Math.atan2(tip.y-tail.y,tip.x-tail.x);
+    sctx.beginPath(); sctx.moveTo(tip.x,tip.y);
+    sctx.lineTo(tip.x-9*Math.cos(ang-0.4), tip.y-9*Math.sin(ang-0.4));
+    sctx.lineTo(tip.x-9*Math.cos(ang+0.4), tip.y-9*Math.sin(ang+0.4));
+    sctx.closePath(); sctx.fillStyle=color; sctx.fill();
+  };
+  arrow(ROAD_OFFSET,1,'#D9822B');
+  arrow(ROAD_OFFSET+P.lane,-1,'#1A6FD4');
+}
+
+function drawFilm(id,S,which){
+  const cv=document.getElementById(id), c=cv.getContext('2d');
+  const C = which==='A'?S.CA:S.CB;
+  const B = which==='A'?S.BA:S.BB;
+  const im= which==='A'?S.imgA:S.imgB;
+  const accent = which==='A'?'#F0A055':'#5FA0F0';
+  c.setTransform(1,0,0,1,0,0);
+  c.fillStyle='#0E1621'; c.fillRect(0,0,IMW,IMH);
+  const pj=p=>projectPix(p,C,B,FPX,IMW,IMH);
+  c.strokeStyle='rgba(255,255,255,0.09)'; c.lineWidth=1.5;
+  for(let y=-4;y<=18;y+=3){const a=pj([-50,y,0]),b=pj([50,y,0]);if(a&&b){c.beginPath();c.moveTo(a.x,a.y);c.lineTo(b.x,b.y);c.stroke();}}
+  for(let x=-30;x<=30;x+=6){const a=pj([x,-4,0]),b=pj([x,18,0]);if(a&&b){c.beginPath();c.moveTo(a.x,a.y);c.lineTo(b.x,b.y);c.stroke();}}
+  if(im){
+    c.lineCap='round';
+    c.strokeStyle='rgba(255,255,255,0.32)'; c.lineWidth=16;
+    c.beginPath(); c.moveTo(im.a.x,im.a.y); c.lineTo(im.b.x,im.b.y); c.stroke();
+    c.strokeStyle=accent; c.lineWidth=4;
+    c.beginPath(); c.moveTo(im.na.x,im.na.y); c.lineTo(im.nb.x,im.nb.y); c.stroke();
+    c.fillStyle=accent;
+    [im.na,im.nb].forEach(p=>{c.beginPath();c.arc(p.x,p.y,7,0,Math.PI*2);c.fill();});
+  }
+  c.fillStyle='rgba(255,255,255,0.55)';
+  c.font='500 22px "Apple SD Gothic Neo",sans-serif';
+  c.fillText(which==='A'?'딴 선 하나가 평면 하나':'두 번째 평면', 26, IMH-30);
+}
+
+function fmt(n,d=1){return n.toFixed(d);}
+function render(){
+  const S=solve(P,noiseSeed);
+  if(!S) return;
+  drawScene(S);
+  drawFilm('camA',S,'A');
+  drawFilm('camB',S,'B');
+
+  document.getElementById('rTrue').textContent=`${fmt(P.tilt)}° / ${fmt(P.az,0)}°`;
+  const dh=S.dihedral;
+  const dEl=document.getElementById('rDihedral');
+  dEl.textContent=`${fmt(dh,2)}°`;
+  dEl.className = dh<6?'bad':(dh<15?'':'ok');
+
+  const eEl=document.getElementById('rErr');
+  if(S.est){
+    const tEst=Math.acos(clamp(S.est[2],-1,1))*DEG;
+    let aEst=Math.atan2(S.est[1],S.est[0])*DEG; if(aEst<0) aEst+=360;
+    const err=Math.acos(clamp(V.dot(S.d,S.est),-1,1))*DEG;
+    document.getElementById('rEst').textContent=`${fmt(tEst)}° / ${fmt(aEst,0)}°`;
+    eEl.textContent=`${fmt(err,2)}°`;
+    eEl.className = err<0.5?'ok':(err<2?'':'bad');
+  }else{
+    document.getElementById('rEst').textContent='해 없음';
+    eEl.textContent='–'; eEl.className='bad';
+  }
+
+  const rms=rmsError(P);
+  document.getElementById('rRms').textContent = P.noise<=0 ? '노이즈 없음' : `${fmt(rms,2)}°`;
+
+  const v=document.getElementById('verdict');
+  if(dh<4){
+    v.className='alert risk';
+    v.textContent='두 평면이 거의 같은 평면이다. 두 촬영 지점과 전주가 한 평면 위에 놓여 교선이 정해지지 않는다. 앞뒤 어긋남을 몇 미터만 주면 바로 풀린다.';
+  }else if(rms>1.0){
+    v.className='alert risk';
+    v.textContent='교선은 잡히지만 선을 딴 오차가 각도로 크게 증폭된다. 촬영 지점을 더 벌리거나 전주 선 추출 정확도를 올려야 한다.';
+  }else{
+    v.className='alert good';
+    v.textContent='두 평면이 충분히 벌어져 있어 교선이 안정적으로 정해진다. 사진 두 장으로 기울기와 방향이 모두 복원된다.';
+  }
+}
+
+const binds=[
+  ['sTilt','vTilt','tilt', v=>`${v.toFixed(1)}°`],
+  ['sAz','vAz','az', v=>`${v.toFixed(0)}°`],
+  ['sLane','vLane','lane', v=>`${v.toFixed(1)} m`],
+  ['sGap','vGap','gap', v=>`${v.toFixed(1)} m`],
+  ['sNoise','vNoise','noise', v=>`${v.toFixed(2)} px`],
+];
+binds.forEach(([sid,vid,key,f])=>{
+  const el=document.getElementById(sid);
+  el.addEventListener('input',()=>{
+    P[key]=parseFloat(el.value);
+    document.getElementById(vid).textContent=f(P[key]);
+    render();
+  });
+});
+function applyPreset(vals){
+  Object.assign(P,vals);
+  binds.forEach(([sid,vid,key,f])=>{
+    document.getElementById(sid).value=P[key];
+    document.getElementById(vid).textContent=f(P[key]);
+  });
+  render();
+}
+document.querySelectorAll('[data-preset]').forEach(b=>{
+  b.addEventListener('click',()=>{
+    const k=b.dataset.preset;
+    if(k==='good')  applyPreset({tilt:6, az:90,  lane:3.5, gap:6, noise:0.6});
+    if(k==='degen') applyPreset({tilt:6, az:90,  lane:3.5, gap:0, noise:0.6});
+    if(k==='noisy') applyPreset({tilt:4, az:140, lane:3.5, gap:2, noise:2.4});
+  });
+});
+document.getElementById('reroll').addEventListener('click',()=>{
+  noiseSeed=(Math.imul(noiseSeed,1103515245)+12345)&0x7fffffff;
+  render();
+});
+window.addEventListener('resize',()=>{ if(!document.getElementById('p-demo').hidden) render(); });
+render();
+</script>
+</body>
+</html>

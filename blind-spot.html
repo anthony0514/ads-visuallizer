@@ -1,0 +1,853 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="description" content="Interactive geometry model of the blind spot left on roadside poles by drive-based ADS inspection.">
+<style>html{color-scheme:dark}body{margin:0;font:14px system-ui}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>ADS Blind Spot Simulator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+  :root{
+    --bg:#0B0F0E; --surface:#131A19; --surface-2:#1A2321; --line:#2B3634; --line-soft:#212B29;
+    --ink:#E3E9E5; --muted:#8C9C97;
+    --cov:#35C9B2; --live:#5CBAF2; --blind:#FF8A4C;
+    --road:#222B29; --roadline:#4C5956; --car:#DCE4E1;
+    --shadow:0 1px 2px rgba(0,0,0,.45), 0 10px 30px -14px rgba(0,0,0,.75);
+    --display:'Archivo',ui-sans-serif,system-ui,sans-serif;
+    --body:'Source Serif 4',Georgia,serif;
+    --mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,monospace;
+    color-scheme:dark;
+  }
+  :root[data-theme="light"]{
+    --bg:#ECEFEA; --surface:#FFFFFF; --surface-2:#F5F7F3; --line:#D5DBD4; --line-soft:#E4E9E3;
+    --ink:#131A19; --muted:#5C6A67;
+    --cov:#0E7C74; --live:#1668A8; --blind:#C2521C;
+    --road:#C6CCC7; --roadline:#FFFFFF; --car:#1D2725;
+    --shadow:0 1px 2px rgba(19,26,25,.06), 0 8px 24px -12px rgba(19,26,25,.18);
+    color-scheme:light;
+  }
+
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:var(--body); font-size:17px; line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1060px; margin:0 auto; padding:34px 24px 46px}
+  @media (max-width:640px){ .wrap{padding:32px 16px 64px} }
+
+  .eyebrow{
+    font-family:var(--mono); font-size:11.5px; font-weight:500;
+    letter-spacing:.16em; text-transform:uppercase; color:var(--muted);
+  }
+  h1{
+    font-family:var(--display); font-weight:700; font-size:clamp(24px,3.4vw,32px);
+    line-height:1.15; letter-spacing:-.02em; margin:9px 0 0; text-wrap:balance;
+  }
+
+  header{
+    padding-bottom:18px; margin-bottom:16px;
+    display:flex; justify-content:space-between; align-items:flex-start; gap:20px; flex-wrap:wrap;
+  }
+  .themeswitch{
+    display:inline-flex; border:1px solid var(--line); border-radius:999px;
+    background:var(--surface); padding:2px; flex:none;
+  }
+  .themeswitch button{
+    font-family:var(--mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--muted); background:transparent; border:0; border-radius:999px;
+    padding:5px 13px; cursor:pointer;
+  }
+  .themeswitch button[aria-pressed="true"]{background:var(--ink); color:var(--surface)}
+  .themeswitch button:focus-visible{outline:2px solid var(--blind); outline-offset:2px}
+
+
+  .panel{
+    background:var(--surface); border:1px solid var(--line); border-radius:10px;
+    box-shadow:var(--shadow); overflow:hidden;
+  }
+
+  .sim-map{position:relative; min-height:206px; border-bottom:1px solid var(--line)}
+  #map{position:absolute; inset:0; width:100%; height:100%}
+  canvas{display:block; width:100%}
+  .cap{
+    position:absolute; top:12px; left:14px; z-index:1; font-family:var(--mono); font-size:10.5px;
+    letter-spacing:.12em; text-transform:uppercase; color:var(--muted);
+  }
+  .legend{
+    position:absolute; bottom:10px; right:14px; z-index:1; display:flex; gap:14px; flex-wrap:wrap;
+    font-family:var(--mono); font-size:10.5px; color:var(--muted);
+  }
+  .legend span{display:flex; align-items:center; gap:5px}
+  .sw{width:10px; height:10px; border-radius:2px; display:inline-block}
+
+  .poles{display:grid; grid-template-columns:repeat(5,1fr); background:var(--surface-2)}
+  @media (max-width:900px){ .poles{grid-template-columns:repeat(2,1fr)} }
+  @media (max-width:520px){ .poles{grid-template-columns:1fr} }
+  .pole-card{padding:12px 12px 12px; border-right:1px solid var(--line-soft)}
+  .pole-card:last-child{border-right:0}
+  @media (max-width:700px){
+    .pole-card{border-right:0; border-bottom:1px solid var(--line-soft)}
+    .pole-card:last-child{border-bottom:0}
+  }
+  .pole-head{display:flex; justify-content:space-between; align-items:baseline; gap:8px; margin-bottom:6px}
+  .pole-meta{
+    display:flex; justify-content:space-between; align-items:baseline; gap:8px;
+    font-family:var(--mono); font-size:10px; letter-spacing:.04em; color:var(--muted);
+    padding:7px 0 0; margin-top:5px; border-top:1px solid var(--line-soft);
+  }
+  .pole-meta b{color:var(--live); font-weight:600; font-size:12.5px; font-variant-numeric:tabular-nums; white-space:nowrap}
+  .pole-card .ctl{margin-top:9px}
+  .pole-card .ctl label{font-size:10px}
+  .pole-name{font-family:var(--mono); font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted)}
+  .pole-pct{
+    font-family:var(--display); font-weight:700; font-size:17px; letter-spacing:-.02em;
+    color:var(--blind); font-variant-numeric:tabular-nums;
+  }
+  .pole-pct small{font-size:11px; font-weight:500; color:var(--muted); margin-left:1px}
+
+
+  .controls{
+    border-top:1px solid var(--line); background:var(--surface-2);
+    padding:16px; display:grid; grid-template-columns:repeat(3,1fr); gap:14px 26px; align-items:end;
+  }
+  @media (max-width:760px){ .controls{grid-template-columns:1fr} }
+  .ctl{display:flex; flex-direction:column; gap:5px}
+  .ctl label{
+    font-family:var(--mono); font-size:11px; letter-spacing:.06em; color:var(--muted);
+    display:flex; justify-content:space-between; align-items:baseline; gap:10px;
+  }
+  .ctl label b{color:var(--ink); font-weight:600; font-variant-numeric:tabular-nums; font-size:12.5px; white-space:nowrap}
+  input[type=range]{-webkit-appearance:none; appearance:none; width:100%; height:20px; background:transparent; margin:0}
+  input[type=range]::-webkit-slider-runnable-track{height:3px; background:var(--line); border-radius:2px}
+  input[type=range]::-moz-range-track{height:3px; background:var(--line); border-radius:2px}
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none; width:15px; height:15px; border-radius:50%;
+    background:var(--ink); margin-top:-6px; border:2px solid var(--surface); cursor:grab;
+  }
+  input[type=range]::-moz-range-thumb{
+    width:15px; height:15px; border-radius:50%; background:var(--ink);
+    border:2px solid var(--surface); cursor:grab;
+  }
+  input[type=range]:focus-visible::-webkit-slider-thumb{outline:2px solid var(--blind); outline-offset:2px}
+
+  .recout[hidden]{display:none}
+  .recout{
+    grid-column:1/-1; margin-top:6px; padding-top:14px; border-top:1px solid var(--line);
+    display:flex; flex-direction:column; gap:8px;
+  }
+  .recout img{width:100%; max-width:720px; border:1px solid var(--line); border-radius:8px; display:block}
+  .recnote{
+    display:flex; gap:14px; align-items:baseline; flex-wrap:wrap;
+    font-family:var(--mono); font-size:11px; color:var(--muted);
+  }
+  .recnote #recerr{color:var(--blind)}
+  .recnote a{color:var(--live); font-weight:600; text-decoration:none; border-bottom:1px solid currentColor}
+  .recnote a[hidden]{display:none}
+  .recnote button{padding:5px 11px}
+  .btnrow{grid-column:1/-1; display:flex; gap:8px; flex-wrap:wrap; align-items:center; padding-top:4px}
+  button{
+    font-family:var(--mono); font-size:12px; letter-spacing:.04em; color:var(--ink);
+    background:var(--surface); border:1px solid var(--line); border-radius:6px;
+    padding:7px 13px; cursor:pointer; transition:background .15s, border-color .15s;
+  }
+  button:hover{background:var(--bg); border-color:var(--muted)}
+  button:focus-visible{outline:2px solid var(--blind); outline-offset:2px}
+  button[aria-pressed="true"]{background:var(--ink); color:var(--surface); border-color:var(--ink)}
+
+
+
+
+  @media (prefers-reduced-motion: reduce){ *{animation:none !important; transition:none !important} }
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <div class="eyebrow">ADS / drive-based pole inspection &middot; coverage geometry</div>
+      <h1>ADS Blind Spot Simulator</h1>
+    </div>
+    <div class="themeswitch" role="group" aria-label="Colour theme">
+      <button type="button" id="th-light" aria-pressed="false">Light</button>
+      <button type="button" id="th-dark" aria-pressed="true">Dark</button>
+    </div>
+  </header>
+
+  <div class="panel">
+    <div class="sim-map">
+      <div class="cap">Plan view &middot; five poles, one round trip</div>
+      <div class="legend">
+        <span><i class="sw" style="background:var(--live)"></i>In view now</span>
+        <span><i class="sw" style="background:var(--cov)"></i>Already seen</span>
+        <span><i class="sw" style="background:var(--blind)"></i>Never seen</span>
+      </div>
+      <canvas id="map" height="206" data-fill="1"></canvas>
+    </div>
+
+    <div class="poles">
+        <div class="pole-card">
+          <div class="pole-head"><span class="pole-name">Pole A</span><span class="pole-pct" id="p-a">&ndash;<small>%</small></span></div>
+          <canvas id="rose-a" height="188"></canvas>
+          <div class="pole-meta"><span>Shots / pass</span><b id="f-a">&ndash;</b></div>
+          <div class="ctl">
+            <label for="s-a">Offset <b><span id="l-a">10.0</span> m</b></label>
+            <input type="range" id="s-a" min="4" max="40" step="0.5" value="10.0">
+          </div>
+        </div>
+        <div class="pole-card">
+          <div class="pole-head"><span class="pole-name">Pole B</span><span class="pole-pct" id="p-b">&ndash;<small>%</small></span></div>
+          <canvas id="rose-b" height="188"></canvas>
+          <div class="pole-meta"><span>Shots / pass</span><b id="f-b">&ndash;</b></div>
+          <div class="ctl">
+            <label for="s-b">Offset <b><span id="l-b">12.5</span> m</b></label>
+            <input type="range" id="s-b" min="4" max="40" step="0.5" value="12.5">
+          </div>
+        </div>
+        <div class="pole-card">
+          <div class="pole-head"><span class="pole-name">Pole C</span><span class="pole-pct" id="p-c">&ndash;<small>%</small></span></div>
+          <canvas id="rose-c" height="188"></canvas>
+          <div class="pole-meta"><span>Shots / pass</span><b id="f-c">&ndash;</b></div>
+          <div class="ctl">
+            <label for="s-c">Offset <b><span id="l-c">11.0</span> m</b></label>
+            <input type="range" id="s-c" min="4" max="40" step="0.5" value="11.0">
+          </div>
+        </div>
+        <div class="pole-card">
+          <div class="pole-head"><span class="pole-name">Pole D</span><span class="pole-pct" id="p-d">&ndash;<small>%</small></span></div>
+          <canvas id="rose-d" height="188"></canvas>
+          <div class="pole-meta"><span>Shots / pass</span><b id="f-d">&ndash;</b></div>
+          <div class="ctl">
+            <label for="s-d">Offset <b><span id="l-d">15.0</span> m</b></label>
+            <input type="range" id="s-d" min="4" max="40" step="0.5" value="15.0">
+          </div>
+        </div>
+        <div class="pole-card">
+          <div class="pole-head"><span class="pole-name">Pole E</span><span class="pole-pct" id="p-e">&ndash;<small>%</small></span></div>
+          <canvas id="rose-e" height="188"></canvas>
+          <div class="pole-meta"><span>Shots / pass</span><b id="f-e">&ndash;</b></div>
+          <div class="ctl">
+            <label for="s-e">Offset <b><span id="l-e">13.0</span> m</b></label>
+            <input type="range" id="s-e" min="4" max="40" step="0.5" value="13.0">
+          </div>
+        </div>
+    </div>
+
+    <div class="controls">
+      <div class="ctl">
+        <label for="s-v">Speed <b><span id="l-v">40</span> km/h &middot; <span id="l-v2">25</span> mph</b></label>
+        <input type="range" id="s-v" min="20" max="110" step="1" value="40">
+      </div>
+      <div class="ctl">
+        <label for="s-L">Effective capture range <b><span id="l-L">50</span> m</b></label>
+        <input type="range" id="s-L" min="12" max="80" step="1" value="50">
+      </div>
+      <div class="ctl">
+        <label for="s-sp">Pole spacing <b><span id="l-sp">40</span> m</b></label>
+        <input type="range" id="s-sp" min="15" max="90" step="1" value="40">
+      </div>
+      <div class="btnrow">
+        <button id="btn-play" aria-pressed="true">Pause</button>
+        <button id="btn-reset">Replay</button>
+        <button id="btn-rec">Record GIF</button>
+      </div>
+      <div class="recout" id="recout" hidden>
+        <img id="recimg" alt="Recorded lap">
+        <div class="recnote">
+          <button id="recsave" hidden>Save GIF</button>
+          <a id="recdl" hidden download="ads-blind-spot.gif">Download GIF</a>
+          <span id="recinfo"></span>
+          <span id="recerr"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var BINS = 720, DEG = Math.PI/180;
+  var SPACING = 40;
+  var FPS = 15;                 // one camera, measured rate
+  var TIME_SCALE = 6;           // playback runs 6x real time
+  var P = { L:50, w:3.5, tau:90, r:0.16, kmh:40, spacing:SPACING };
+
+  // index 0 and 6 are dummies: context poles so the camera always has something ahead
+  var POLES = [
+    {id:null, label:'0', d:12,   x:0, dummy:true},
+    {id:'a',  label:'A', d:10,   x:0},
+    {id:'b',  label:'B', d:12.5, x:0},
+    {id:'c',  label:'C', d:11,   x:0},
+    {id:'d',  label:'D', d:15,   x:0},
+    {id:'e',  label:'E', d:13,   x:0},
+    {id:null, label:'6', d:12,   x:0, dummy:true}
+  ];
+  var NP = POLES.length;
+  var CARDS = POLES.filter(function(p){ return !p.dummy; });
+  function layout(){ for(var i=0;i<NP;i++) POLES[i].x=(i-(NP-1)/2)*P.spacing; }
+
+  function css(n){ return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
+  function rgba(hex,a){
+    hex=(hex||'').replace('#','');
+    if(hex.length===3) hex=hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
+    var n=parseInt(hex,16);
+    if(isNaN(n)) return 'rgba(0,0,0,'+a+')';
+    return 'rgba('+((n>>16)&255)+','+((n>>8)&255)+','+(n&255)+','+a+')';
+  }
+  function monoFont(px,wt){ return (wt||'500')+' '+px+'px '+css('--mono').split(',')[0].replace(/["']/g,'')+',monospace'; }
+
+  // ---- drive -------------------------------------------------------------
+  function minOffset(){ var m=1e9; for(var i=0;i<NP;i++) m=Math.min(m,POLES[i].d); return m; }
+  function maxOffset(){ var m=0;   for(var i=0;i<NP;i++) m=Math.max(m,POLES[i].d); return m; }
+  function travelHalf(){
+    var dmin=minOffset();
+    var reach = P.L>dmin ? Math.sqrt(P.L*P.L-dmin*dmin) : 0;
+    return 2*P.spacing + reach;
+  }
+  // right-hand traffic: outbound (+x) runs the far lane, the return (-x) the near lane
+  function camAt(u, lane){
+    var X=travelHalf();
+    return { x:-X + 2*X*u, y: lane? P.w : 0, dir: lane? 1 : -1 };
+  }
+
+  // ---- capture geometry --------------------------------------------------
+  // the camera looks forward, so a pole counts only while it is AHEAD and in range
+  function shotHalf(pole, lane){
+    var d = lane ? pole.d+P.w : pole.d;
+    if(d>=P.L) return 0;
+    return Math.sqrt(P.L*P.L-d*d);
+  }
+  function shotCount(pole, lane){
+    var half=shotHalf(pole,lane);
+    if(half<=0) return 0;
+    return Math.max(1, Math.round(FPS*half/(P.kmh/3.6)));
+  }
+  function shotXs(pole, lane, dir){
+    var half=shotHalf(pole,lane), n=shotCount(pole,lane), out=[], i;
+    if(half<=0||n<=0) return out;
+    var a = dir>0 ? pole.x-half : pole.x;
+    var b = dir>0 ? pole.x      : pole.x+half;
+    if(n===1) return [dir>0?b:a];
+    for(i=0;i<n;i++) out.push(a+(b-a)*i/(n-1));
+    return out;
+  }
+
+  // 0 = never seen, 1 = already seen, 2 = in view from where the camera is right now
+  function markFrom(mask, val, cx, cy, pole, overwrite){
+    var dx=cx-pole.x, dy=cy+pole.d;
+    if(Math.hypot(dx,dy) > P.L+1e-9) return false;
+    var cosTau=Math.cos(P.tau*DEG);
+    for(var i=0;i<BINS;i++){
+      if(!overwrite && mask[i]) continue;
+      var a=i*2*Math.PI/BINS, nx=Math.cos(a), ny=Math.sin(a);
+      var vx=dx-P.r*nx, vy=dy-P.r*ny, len=Math.hypot(vx,vy);
+      if(len<1e-6) continue;
+      if((nx*vx+ny*vy)/len > cosTau) mask[i]=val;
+    }
+    return true;
+  }
+  function buildPole(pole, prog1, prog2, live){
+    var mask=new Uint8Array(BINS), TH=travelHalf(), i, xs;
+    var vx1=-TH+2*TH*Math.min(1,prog1);
+    xs=shotXs(pole,1,1);
+    for(i=0;i<xs.length;i++) if(xs[i]<=vx1) markFrom(mask,1,xs[i],P.w,pole,false);
+    if(prog2>0){
+      var vx2=TH-2*TH*prog2;
+      xs=shotXs(pole,0,-1);
+      for(i=0;i<xs.length;i++) if(xs[i]>=vx2) markFrom(mask,1,xs[i],0,pole,false);
+    }
+    var capturing=false;
+    if(live){
+      var lane=live.y>0?1:0, half=shotHalf(pole,lane);
+      var ahead = live.dir>0 ? (pole.x>=live.x) : (pole.x<=live.x);
+      capturing = half>0 && ahead && Math.abs(pole.x-live.x)<=half;
+      if(capturing) markFrom(mask,2,live.x,live.y,pole,true);
+    }
+    return {mask:mask, inRange:capturing};
+  }
+  function tally(mask){
+    var live=0, unseen=0;
+    for(var i=0;i<BINS;i++){ if(mask[i]===0) unseen++; else if(mask[i]===2) live++; }
+    return {live:live*360/BINS, blind:unseen*360/BINS};
+  }
+  function runs(mask){
+    var out=[], i=0;
+    while(i<BINS){
+      var v=mask[i], j=i;
+      while(j<BINS && mask[j]===v) j++;
+      out.push({v:v, a0:i*360/BINS, a1:j*360/BINS});
+      i=j;
+    }
+    if(out.length>1 && out[0].v===out[out.length-1].v){
+      var last=out.pop(); out[0].a0=last.a0-360;
+    }
+    return out;
+  }
+  function segColor(v){ return v===0? css('--blind') : (v===1? css('--cov') : css('--live')); }
+
+  function passDuration(){ return (2*travelHalf())/(P.kmh/3.6)/TIME_SCALE; }
+  function refresh(){
+    for(var k=0;k<CARDS.length;k++){
+      var pk=CARDS[k], n=shotCount(pk,1), half=shotHalf(pk,1);
+      var gap = (n>1) ? (half/(n-1)).toFixed(1)+' m' : '–';
+      document.getElementById('f-'+pk.id).textContent = n+' · '+gap;
+    }
+  }
+
+  // ---- canvas ------------------------------------------------------------
+  function fit(cv){
+    var dpr=Math.min(window.devicePixelRatio||1,2), w=cv.clientWidth, h;
+    if(cv.dataset.fill){ h=cv.clientHeight || parseInt(cv.getAttribute('height'),10); }
+    else { h=parseInt(cv.getAttribute('height'),10); cv.style.height=h+'px'; }
+    cv.width=Math.round(w*dpr); cv.height=Math.round(h*dpr);
+    var g=cv.getContext('2d'); g.setTransform(dpr,0,0,dpr,0,0); g.clearRect(0,0,w,h);
+    return {g:g,w:w,h:h};
+  }
+
+  function drawMap(states, live, phase){
+    var cv=document.getElementById('map'), o=fit(cv), g=o.g, W=o.w, H=o.h;
+    var lanew=Math.max(3.0,P.w), dMax=maxOffset();
+    var yTop=-dMax-11, yBot=P.w+lanew/2+7;
+    var spanY=yBot-yTop, spanX=2*travelHalf()+10;
+    var s=Math.min(W/spanX, Math.max(1,(H-56))/spanY);
+    var ox=W/2, oy=(H-spanY*s)/2 - yTop*s;
+    function X(x){ return ox+x*s; }
+    function Y(y){ return oy+y*s; }
+    var MONO=monoFont(10), LIVE=css('--live');
+
+    var laneNear=Y(0), laneFar=Y(P.w), half=lanew/2*s;
+    g.fillStyle=css('--road'); g.fillRect(0,laneNear-half,W,(laneFar+half)-(laneNear-half));
+    g.strokeStyle=css('--roadline'); g.lineWidth=1.5; g.setLineDash([9,9]);
+    g.beginPath(); g.moveTo(0,(laneNear+laneFar)/2); g.lineTo(W,(laneNear+laneFar)/2); g.stroke();
+    g.setLineDash([]);
+
+    function trace(y, active){
+      var TH=travelHalf();
+      g.strokeStyle = active? LIVE : css('--muted');
+      g.lineWidth=2; g.globalAlpha=active?.75:.3; g.setLineDash(active?[]:[4,4]);
+      g.beginPath(); g.moveTo(X(-TH),y); g.lineTo(X(TH),y); g.stroke();
+      g.setLineDash([]); g.globalAlpha=1;
+    }
+    trace(laneFar, phase===1);
+    trace(laneNear, phase===2);
+
+    var poleR=Math.max(14,1.35*s), poleRing=Math.max(7,poleR*0.44);
+
+    if(live){
+      var gx=X(live.x), gy=Y(live.y), Rpx=P.L*s;
+      g.strokeStyle=rgba(LIVE,.3); g.setLineDash([3,6]); g.lineWidth=1;
+      g.beginPath(); g.arc(gx,gy,Rpx,0,Math.PI*2); g.stroke(); g.setLineDash([]);
+      g.fillStyle=LIVE; g.font=MONO; g.textAlign='left';
+      g.fillText('L = '+P.L.toFixed(0)+' m', Math.max(10, gx-Rpx+9), Y(P.w)+lanew/2*s+18);
+
+      for(var k=0;k<NP;k++){
+        if(!states[k].inRange) continue;
+        var qx=X(POLES[k].x), qy=Y(-POLES[k].d);
+        var ang=Math.atan2(qy-gy,qx-gx), len=Math.max(1,Math.hypot(qx-gx,qy-gy));
+        var ha=Math.atan(poleR/len);
+        var bg=g.createLinearGradient(gx,gy,gx+Math.cos(ang)*len,gy+Math.sin(ang)*len);
+        bg.addColorStop(0, rgba(LIVE,.36));
+        bg.addColorStop(1, rgba(LIVE,.09));
+        g.fillStyle=bg;
+        g.beginPath(); g.moveTo(gx,gy); g.arc(gx,gy,len,ang-ha,ang+ha); g.closePath(); g.fill();
+        g.strokeStyle=rgba(LIVE,.5); g.lineWidth=1.2; g.lineJoin='round';
+        g.beginPath(); g.moveTo(gx,gy); g.arc(gx,gy,len,ang-ha,ang+ha); g.closePath(); g.stroke();
+      }
+
+      var cw=Math.max(8,1.8*s), ch=Math.max(16,4.4*s);
+      var rx=gx-ch/2, ry=gy-cw/2;
+      g.fillStyle=css('--car'); g.beginPath();
+      if(g.roundRect) g.roundRect(rx,ry,ch,cw,3); else g.rect(rx,ry,ch,cw);
+      g.fill();
+      g.fillStyle=css('--road');
+      g.fillRect(phase===1 ? rx+ch-4 : rx+1, ry+2, 3, cw-4);
+    }
+
+    for(k=0;k<NP;k++){
+      var p=POLES[k], cxp=X(p.x), cyp=Y(-p.d);
+      g.globalAlpha = p.dummy? .28 : 1;
+      var R=poleR, ring=poleRing, rr=runs(states[k].mask);
+      for(var m=0;m<rr.length;m++){
+        var seg=rr[m];
+        g.beginPath(); g.arc(cxp,cyp,R-ring/2,seg.a0*DEG,seg.a1*DEG);
+        g.lineWidth=ring; g.strokeStyle=segColor(seg.v); g.stroke();
+      }
+      g.fillStyle=css('--surface'); g.beginPath(); g.arc(cxp,cyp,Math.max(2,R-ring-1),0,Math.PI*2); g.fill();
+      g.strokeStyle=css('--line'); g.lineWidth=1; g.stroke();
+
+      g.strokeStyle=css('--muted'); g.globalAlpha=(p.dummy?.14:.5); g.setLineDash([2,4]); g.lineWidth=1;
+      g.beginPath(); g.moveTo(cxp,cyp+R); g.lineTo(cxp,laneNear); g.stroke();
+      g.setLineDash([]); g.globalAlpha=p.dummy?.28:1;
+
+      if(!p.dummy){
+        var lab=p.label, dim=(P.spacing*s>96) ? ' · '+p.d.toFixed(1)+' m' : '';
+        g.font=monoFont(11,'600'); var lw=g.measureText(lab).width;
+        g.font=MONO; var dw=g.measureText(dim).width;
+        var lx=cxp-(lw+dw)/2, ly=Math.max(11, cyp-R-8);
+        g.textAlign='left';
+        g.fillStyle=css('--ink'); g.font=monoFont(11,'600'); g.fillText(lab, lx, ly);
+        g.fillStyle=css('--muted'); g.font=MONO; g.fillText(dim, lx+lw, ly);
+      }
+      g.globalAlpha=1;
+    }
+
+    g.font=MONO; g.textAlign='right';
+    g.fillStyle = phase===2? LIVE : css('--muted');
+    g.fillText('←  PASS 2', W-12, laneNear-half-8);
+    g.fillStyle = phase===1? LIVE : css('--muted');
+    g.fillText('PASS 1  →', W-12, laneFar+half+16);
+  }
+
+  function drawRose(id, mask){
+    var cv=document.getElementById(id), o=fit(cv), g=o.g, W=o.w, H=o.h;
+    var cx=W/2, cy=H/2, R=Math.min(W,H)/2-19, ring=Math.max(15,R*0.34);
+    var rr=runs(mask);
+    for(var i=0;i<rr.length;i++){
+      var seg=rr[i];
+      g.beginPath(); g.arc(cx,cy,R-ring/2,seg.a0*DEG,seg.a1*DEG);
+      g.lineWidth=ring; g.strokeStyle=segColor(seg.v); g.stroke();
+    }
+    g.strokeStyle=css('--line'); g.lineWidth=1;
+    g.beginPath(); g.arc(cx,cy,R,0,Math.PI*2); g.stroke();
+    g.beginPath(); g.arc(cx,cy,R-ring,0,Math.PI*2); g.stroke();
+    g.fillStyle=css('--muted'); g.font=monoFont(9); g.textAlign='center';
+    g.fillText('ROAD', cx, cy+R+14);
+    g.fillText('BACK', cx, cy-R-7);
+  }
+
+  // ---- scene -------------------------------------------------------------
+  var T=0;
+  function renderScene(t){
+    var p1=Math.min(1,t), p2=Math.min(1,Math.max(0,t-1));
+    var phase=t<1?1:2;
+    var live = phase===1 ? camAt(p1,1) : camAt(1-p2,0);
+    var states=[];
+    for(var k=0;k<NP;k++){
+      var st=buildPole(POLES[k],p1,p2,live);
+      states.push(st);
+      if(POLES[k].id)
+        document.getElementById('p-'+POLES[k].id).innerHTML=(tally(st.mask).blind/3.6).toFixed(1)+'<small>%</small>';
+    }
+    for(k=0;k<CARDS.length;k++) drawRose('rose-'+CARDS[k].id, states[POLES.indexOf(CARDS[k])].mask);
+    drawMap(states, live, phase);
+  }
+
+  var reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var playing=!reduce, last=0, recording=false;
+  if(reduce) T=1.999;
+  function frame(now){
+    if(!last) last=now;
+    var dt=(now-last)/1000; last=now;
+    if(!recording){
+      if(playing) T += dt/passDuration();
+      if(T>=2) T-=2;
+      renderScene(T);
+    }
+    requestAnimationFrame(frame);
+  }
+
+  // ---- GIF encoder (self-contained: CDN workers are unavailable here) -----
+  function medianCut(hist, sumR, sumG, sumB, maxColors){
+    var bins=[], i;
+    for(i=0;i<32768;i++) if(hist[i]) bins.push(i);
+    if(!bins.length) return [[0,0,0]];
+    var boxes=[bins];
+    function extent(box, sh){
+      var lo=255, hi=0;
+      for(var j=0;j<box.length;j++){ var v=(box[j]>>sh)&31; if(v<lo)lo=v; if(v>hi)hi=v; }
+      return hi-lo;
+    }
+    while(boxes.length<maxColors){
+      var bi=-1, best=-1, bch=0;
+      for(i=0;i<boxes.length;i++){
+        if(boxes[i].length<2) continue;
+        var er=extent(boxes[i],10), eg=extent(boxes[i],5), eb=extent(boxes[i],0);
+        var e=Math.max(er,eg,eb), ch=e===er?10:(e===eg?5:0);
+        if(e>best){ best=e; bi=i; bch=ch; }
+      }
+      if(bi<0||best<=0) break;
+      var box=boxes[bi], sh=bch;
+      box.sort(function(a,b){ return ((a>>sh)&31)-((b>>sh)&31); });
+      var total=0; for(i=0;i<box.length;i++) total+=hist[box[i]];
+      var acc=0, cut=1;
+      for(i=0;i<box.length-1;i++){ acc+=hist[box[i]]; if(acc>=total/2){ cut=i+1; break; } }
+      boxes.splice(bi,1,box.slice(0,cut),box.slice(cut));
+    }
+    var pal=[];
+    for(i=0;i<boxes.length;i++){
+      var n=0,r=0,gg=0,b=0;
+      for(var j=0;j<boxes[i].length;j++){
+        var c=boxes[i][j], w=hist[c];
+        n+=w; r+=sumR[c]; gg+=sumG[c]; b+=sumB[c];
+      }
+      pal.push(n? [Math.round(r/n),Math.round(gg/n),Math.round(b/n)] : [0,0,0]);
+    }
+    return pal;
+  }
+  function buildLut(pal){
+    var lut=new Uint8Array(32768);
+    for(var c=0;c<32768;c++){
+      var r=((c>>10)&31)*8.2258, g=((c>>5)&31)*8.2258, b=(c&31)*8.2258;
+      var bi=0, bd=1e12;
+      for(var i=0;i<pal.length;i++){
+        var dr=r-pal[i][0], dg=g-pal[i][1], db=b-pal[i][2];
+        var d=dr*dr*0.30+dg*dg*0.59+db*db*0.11;
+        if(d<bd){ bd=d; bi=i; }
+      }
+      lut[c]=bi;
+    }
+    return lut;
+  }
+  function lzwFrame(out, minCode, px){
+    var maxbits=12, maxmax=1<<maxbits;
+    var nbits=minCode+1, maxcode=(1<<nbits)-1;
+    var clear=1<<minCode, eoi=clear+1, free=clear+2;
+    var cur=0, curBits=0, block=[], dict=new Map(), clearFlag=false;
+    function flushBlock(){ out.push(block.length); for(var i=0;i<block.length;i++) out.push(block[i]); block=[]; }
+    function charOut(b){ block.push(b); if(block.length===255) flushBlock(); }
+    function output(code){
+      cur |= code<<curBits; curBits+=nbits;
+      while(curBits>=8){ charOut(cur&255); cur>>>=8; curBits-=8; }
+      if(free>maxcode || clearFlag){
+        if(clearFlag){ nbits=minCode+1; maxcode=(1<<nbits)-1; clearFlag=false; }
+        else { nbits++; maxcode = nbits===maxbits ? maxmax : (1<<nbits)-1; }
+      }
+    }
+    output(clear);
+    var ent=px[0];
+    for(var i=1;i<px.length;i++){
+      var k=px[i], key=(ent<<8)|k, got=dict.get(key);
+      if(got!==undefined){ ent=got; continue; }
+      output(ent);
+      if(free<maxmax){ dict.set(key,free++); }
+      else { output(clear); dict.clear(); free=clear+2; clearFlag=true; nbits=minCode+1; maxcode=(1<<nbits)-1; }
+      ent=k;
+    }
+    output(ent); output(eoi);
+    while(curBits>0){ charOut(cur&255); cur>>>=8; curBits-=8; }
+    if(block.length) flushBlock();
+    out.push(0);
+  }
+
+  // ---- recorder ----------------------------------------------------------
+  var GIF_DELAY_CS=8, GIF_FPS=100/GIF_DELAY_CS;
+  var recCv=null, recCtx=null, recScale=1.4, recLayout=null, gifBlob=null, dlNs=null;
+  // inside a Claude viewer window.claude always exists; anywhere else this page is standalone
+  var standalone = !(window.claude && typeof claude.use==='function');
+  if(!standalone){
+    claude.use('downloads').then(function(ns){ dlNs=ns; syncSaveBtn(); }).catch(function(){});
+  }
+  function syncSaveBtn(){
+    var b=document.getElementById('recsave'), a=document.getElementById('recdl');
+    if(b) b.hidden = !(dlNs && gifBlob);
+    if(a) a.hidden = !(standalone && gifBlob);   // a plain link works only outside the viewer
+  }
+  function buildRecCanvas(){
+    var map=document.getElementById('map');
+    var W=map.clientWidth, mapH=map.clientHeight;
+    var r0=document.getElementById('rose-'+CARDS[0].id);
+    var pad=12, cellW=W/CARDS.length;
+    var roseW=cellW-pad*2, roseH=roseW*(r0.clientHeight/Math.max(1,r0.clientWidth));
+    var headH=26, footH=26, donutH=headH+roseH+10;
+    recLayout={W:W, mapH:mapH, cellW:cellW, pad:pad, roseW:roseW, roseH:roseH, headH:headH, footH:footH, donutH:donutH};
+    recCv=document.createElement('canvas');
+    recCv.width=Math.round(W*recScale)&~1;
+    recCv.height=Math.round((mapH+donutH+footH)*recScale)&~1;
+    recCtx=recCv.getContext('2d',{willReadFrequently:true});
+  }
+  function compositeFrame(){
+    var L=recLayout, g=recCtx;
+    g.setTransform(recScale,0,0,recScale,0,0);
+    g.fillStyle=css('--surface'); g.fillRect(0,0,L.W,L.mapH);
+    g.drawImage(document.getElementById('map'), 0, 0, L.W, L.mapH);
+    g.fillStyle=css('--surface-2'); g.fillRect(0,L.mapH,L.W,L.donutH+L.footH);
+    g.strokeStyle=css('--line'); g.lineWidth=1;
+    g.beginPath(); g.moveTo(0,L.mapH+.5); g.lineTo(L.W,L.mapH+.5); g.stroke();
+    for(var k=0;k<CARDS.length;k++){
+      var x=k*L.cellW, top=L.mapH;
+      if(k){ g.strokeStyle=css('--line-soft'); g.beginPath(); g.moveTo(x+.5,top); g.lineTo(x+.5,top+L.donutH); g.stroke(); }
+      g.fillStyle=css('--muted'); g.font=monoFont(10); g.textAlign='left';
+      g.fillText('POLE '+CARDS[k].label, x+L.pad, top+17);
+      g.fillStyle=css('--blind'); g.font='700 15px '+css('--display').split(',')[0].replace(/["']/g,'')+',sans-serif';
+      g.textAlign='right'; g.fillText(document.getElementById('p-'+CARDS[k].id).textContent, x+L.cellW-L.pad, top+18);
+      g.drawImage(document.getElementById('rose-'+CARDS[k].id), x+L.pad, top+L.headH, L.roseW, L.roseH);
+    }
+    var fy=L.mapH+L.donutH;
+    g.strokeStyle=css('--line'); g.beginPath(); g.moveTo(0,fy+.5); g.lineTo(L.W,fy+.5); g.stroke();
+    g.fillStyle=css('--muted'); g.font=monoFont(10); g.textAlign='left';
+    g.fillText(P.kmh.toFixed(0)+' km/h  ·  L '+P.L.toFixed(0)+' m  ·  spacing '+P.spacing.toFixed(0)+
+               ' m  ·  '+FPS+' fps  ·  two passes', L.pad, fy+17);
+  }
+
+  function setProgress(msg){ document.getElementById('btn-rec').textContent=msg; }
+  function chunk(n, step, done){
+    var i=0;
+    (function run(){
+      var t0=performance.now();
+      while(i<n && performance.now()-t0<60){ step(i++); }
+      if(i<n){ setTimeout(run,0); } else { done(); }
+    })();
+  }
+
+  function recordGif(){
+    recording=true; gifBlob=null;
+    document.getElementById('recout').hidden=true;
+    syncSaveBtn();
+    buildRecCanvas();
+    var total=2*passDuration();
+    var N=Math.max(8, Math.round(total*GIF_FPS));
+    var Wp=recCv.width, Hp=recCv.height;
+    var hist=new Uint32Array(32768), sR=new Float64Array(32768), sG=new Float64Array(32768), sB=new Float64Array(32768);
+
+    function grab(i){
+      renderScene(i/N*2);
+      compositeFrame();
+      return recCtx.getImageData(0,0,Wp,Hp).data;
+    }
+    setProgress('Rendering 0%');
+    chunk(N, function(i){
+      var d=grab(i);
+      for(var q=0;q<d.length;q+=8){          // every other pixel is plenty for the palette
+        var r=d[q], g=d[q+1], b=d[q+2];
+        var c=((r>>3)<<10)|((g>>3)<<5)|(b>>3);
+        hist[c]++; sR[c]+=r; sG[c]+=g; sB[c]+=b;
+      }
+      if(i%6===0) setProgress('Rendering '+Math.round(i/N*50)+'%');
+    }, function(){
+      var pal=medianCut(hist,sR,sG,sB,256);
+      var lut=buildLut(pal);
+      var bits=1; while((1<<bits)<pal.length) bits++;
+      if(bits<1) bits=1;
+      var tableSize=1<<bits, minCode=Math.max(2,bits);
+      var bytes=[];
+      function w8(v){ bytes.push(v&255); }
+      function w16(v){ bytes.push(v&255, (v>>8)&255); }
+      function ws(str){ for(var i=0;i<str.length;i++) bytes.push(str.charCodeAt(i)); }
+      ws('GIF89a'); w16(Wp); w16(Hp);
+      w8(0xF0 | (bits-1)); w8(0); w8(0);
+      for(var i=0;i<tableSize;i++){
+        var c=pal[i]||[0,0,0]; w8(c[0]); w8(c[1]); w8(c[2]);
+      }
+      ws('!'); w8(0xFF); w8(11); ws('NETSCAPE2.0'); w8(3); w8(1); w16(0); w8(0);
+
+      var px=new Uint8Array(Wp*Hp);
+      chunk(N, function(i){
+        var d=grab(i), n=Wp*Hp;
+        for(var q=0,o=0;q<n;q++,o+=4){
+          px[q]=lut[((d[o]>>3)<<10)|((d[o+1]>>3)<<5)|(d[o+2]>>3)];
+        }
+        ws('!'); w8(0xF9); w8(4); w8(0x04); w16(GIF_DELAY_CS); w8(0); w8(0);
+        w8(0x2C); w16(0); w16(0); w16(Wp); w16(Hp); w8(0);
+        w8(minCode);
+        lzwFrame(bytes, minCode, px);
+        if(i%4===0) setProgress('Encoding '+Math.round(50+i/N*50)+'%');
+      }, function(){
+        w8(0x3B);
+        gifBlob=new Blob([new Uint8Array(bytes)], {type:'image/gif'});
+        var url=URL.createObjectURL(gifBlob);
+        document.getElementById('recimg').src=url;
+        document.getElementById('recdl').href=url;
+        document.getElementById('recinfo').textContent=
+          Wp+'×'+Hp+'  ·  '+N+' frames  ·  '+(gifBlob.size/1048576).toFixed(1)+' MB  ·  '+
+          P.kmh.toFixed(0)+' km/h, L '+P.L.toFixed(0)+' m, spacing '+P.spacing.toFixed(0)+' m';
+        document.getElementById('recerr').textContent='';
+        document.getElementById('recout').hidden=false;
+        syncSaveBtn();
+        recording=false; T=0; last=0;
+        var b=document.getElementById('btn-rec'); b.disabled=false; b.textContent='Record GIF';
+        saveGif(true);
+      });
+    });
+  }
+
+  function saveGif(auto){
+    if(!dlNs || !gifBlob) return;
+    var b=document.getElementById('recsave'), err=document.getElementById('recerr');
+    if(b){ b.disabled=true; b.textContent='Saving…'; }
+    dlNs.save({filename:'ads-blind-spot.gif', data:gifBlob}).then(function(){
+      if(b){ b.textContent='Saved'; b.disabled=false; setTimeout(function(){ b.textContent='Save GIF'; },1800); }
+    }).catch(function(e){
+      var c=(e&&e.code)||'unavailable';
+      if(b){ b.disabled=false; b.textContent='Save GIF'; }
+      if(auto && c==='declined'){ err.textContent=''; return; }
+      err.textContent = c==='declined' ? 'Save cancelled.'
+        : c==='rate_limited' ? 'A prompt is already open. Try again in a moment.'
+        : c==='too_large' ? 'GIF is over the 16 MB save limit.'
+        : 'Saving is not available in this view.';
+      if(b && c!=='declined' && c!=='rate_limited') b.hidden=true;
+    });
+  }
+
+  // ---- wiring ------------------------------------------------------------
+  function onPole(sliderId, labelId, pole){
+    var el=document.getElementById(sliderId);
+    el.addEventListener('input', function(){
+      pole.d=parseFloat(el.value);
+      document.getElementById(labelId).textContent=pole.d.toFixed(1);
+      refresh();
+    });
+  }
+  for(var q=0;q<CARDS.length;q++) onPole('s-'+CARDS[q].id, 'l-'+CARDS[q].id, CARDS[q]);
+
+  function onParam(sliderId, labelId, key, fmt){
+    var el=document.getElementById(sliderId);
+    el.addEventListener('input', function(){
+      P[key]=parseFloat(el.value);
+      document.getElementById(labelId).textContent=fmt(P[key]);
+      refresh();
+    });
+  }
+  onParam('s-v','l-v','kmh',function(v){
+    document.getElementById('l-v2').textContent=Math.round(v*0.621371);
+    return v.toFixed(0);
+  });
+  onParam('s-L','l-L','L',function(v){return v.toFixed(0)});
+  onParam('s-sp','l-sp','spacing',function(v){ layout(); return v.toFixed(0); });
+
+  var bp=document.getElementById('btn-play');
+  bp.addEventListener('click',function(){
+    if(recording) return;
+    playing=!playing; bp.setAttribute('aria-pressed',String(playing));
+    bp.textContent=playing?'Pause':'Play';
+  });
+  document.getElementById('btn-reset').addEventListener('click',function(){
+    if(recording) return;
+    T=0; playing=true; bp.setAttribute('aria-pressed','true'); bp.textContent='Pause';
+  });
+  document.getElementById('btn-rec').addEventListener('click',function(){
+    if(recording) return;
+    this.disabled=true;
+    recordGif();
+  });
+  document.getElementById('recsave').addEventListener('click',function(){ saveGif(false); });
+
+  // theme
+  function applyTheme(t){
+    document.documentElement.setAttribute('data-theme',t);
+    document.getElementById('th-light').setAttribute('aria-pressed',String(t==='light'));
+    document.getElementById('th-dark').setAttribute('aria-pressed',String(t==='dark'));
+    try{ localStorage.setItem('ads-theme',t); }catch(e){}
+  }
+  (function(){
+    var t=document.documentElement.getAttribute('data-theme');
+    if(t!=='light'&&t!=='dark'){
+      t='dark';
+      try{ var v=localStorage.getItem('ads-theme'); if(v==='light'||v==='dark') t=v; }catch(e){}
+    }
+    applyTheme(t);
+  })();
+  document.getElementById('th-light').addEventListener('click',function(){ applyTheme('light'); });
+  document.getElementById('th-dark').addEventListener('click',function(){ applyTheme('dark'); });
+
+  layout(); refresh();
+  requestAnimationFrame(frame);
+})();
+</script>
+
+</body>
+</html>
