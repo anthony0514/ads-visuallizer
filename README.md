@@ -53,6 +53,12 @@ At 40 km/h, 15 fps, L = 50 m, right-hand traffic:
 
 Deep-link a tab with a hash: `.../#blind-spot`, `.../#pole-tilt`.
 
+Both pages and the shell share one light design system in `assets/theme.css`:
+a single palette, type scale and set of surfaces. The three scene hues carry the
+same meaning everywhere — blue for what is live, green for what is resolved,
+amber for what is missing. The blind spot canvas reads those same tokens, so the
+drawing and the page never drift apart.
+
 ## Using it
 
 Open `index.html`, or open either page on its own. Each visualizer is a single
