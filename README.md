@@ -3,7 +3,7 @@
 Interactive geometry model of the blind spot that drive-based pole inspection
 leaves on a roadside pole's circumference.
 
-**Live page:** see the GitHub Pages URL in this repository's About section.
+**Live page:** https://anthony0514.github.io/ads-visuallizer/
 
 ## What it models
 
@@ -42,10 +42,22 @@ At 40 km/h, 15 fps, L = 50 m, right-hand traffic:
 - τ = 90° is a floor. A grazing-angle surface is visible but hard to read.
 - The pole is a plain cylinder. Attachments cast their own shadows.
 
+## Pages in this repository
+
+`index.html` is a tab shell that loads each visualizer in place:
+
+| Tab | File | What it covers |
+|-----|------|----------------|
+| Blind Spot | `blind-spot.html` | The blind sector left on a pole's circumference by a drive-based pass |
+| 전주 기울기 | `pole_tilt.html` | Recovering pole tilt from the two images of a round trip |
+
+Deep-link a tab with a hash: `.../#blind-spot`, `.../#pole-tilt`.
+
 ## Using it
 
-Open `index.html`. Everything is in that one file except the Google Fonts link,
-so any static host works. **Record GIF** renders one round trip frame by frame and
+Open `index.html`, or open either page on its own. Each visualizer is a single
+self-contained file except for the Google Fonts link, so any static host works.
+In the blind spot page, **Record GIF** renders one round trip frame by frame and
 encodes a GIF in the page.
 
 ## Notes
