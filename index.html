@@ -6,63 +6,58 @@
 <meta name="robots" content="noindex, nofollow">
 <title>ADS Visualizer</title>
 <meta name="description" content="ADS 시각화 모음 — 순회 촬영 사각지대 기하 모델과 왕복 2장 전주 기울기 복원.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/theme.css">
 <style>
-  :root{
-    --bar:#0E1621; --bar-line:#243346; --bar-ink:#E7EDF3; --bar-muted:#8CA0B5;
-    --accent:#4FA3F7; --h:52px;
-  }
-  *{box-sizing:border-box}
   html,body{height:100%}
-  body{
-    margin:0; background:var(--bar); color:var(--bar-ink);
-    font:14px/1.5 "Apple SD Gothic Neo","Pretendard",-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
-    -webkit-font-smoothing:antialiased;
-    display:flex; flex-direction:column; overflow:hidden;
-  }
-  header{
-    height:var(--h); flex:none; display:flex; align-items:center; gap:18px;
-    padding:0 16px; background:var(--bar); border-bottom:1px solid var(--bar-line);
+  body{display:flex; flex-direction:column; overflow:hidden; background:var(--paper)}
+
+  .appbar{
+    flex:none; height:54px; display:flex; align-items:center; gap:20px;
+    padding:0 16px; background:var(--surface); border-bottom:1px solid var(--rule);
   }
   .brand{
-    font-size:12px; font-weight:700; letter-spacing:.14em; text-transform:uppercase;
-    color:var(--bar-muted); white-space:nowrap; flex:none;
+    font-family:var(--mono); font-size:11px; font-weight:500;
+    letter-spacing:.16em; text-transform:uppercase; color:var(--ink-3);
+    white-space:nowrap; flex:none;
   }
-  .brand b{color:var(--bar-ink); font-weight:700}
-  nav{display:flex; gap:4px; min-width:0; overflow-x:auto; scrollbar-width:none}
-  nav::-webkit-scrollbar{display:none}
-  .tab{
-    font:inherit; font-size:13.5px; font-weight:600; white-space:nowrap;
-    padding:7px 14px; border-radius:7px; border:1px solid transparent;
-    background:transparent; color:var(--bar-muted); cursor:pointer;
-    transition:background .12s, color .12s;
+  .brand b{color:var(--ink); font-weight:600}
+
+  .apptabs{display:flex; gap:4px; min-width:0; overflow-x:auto; scrollbar-width:none}
+  .apptabs::-webkit-scrollbar{display:none}
+  .apptab{
+    font:inherit; font-family:var(--display); font-size:13.5px; font-weight:600;
+    white-space:nowrap; padding:7px 14px; border-radius:999px;
+    border:1px solid transparent; background:transparent; color:var(--ink-2);
+    cursor:pointer; transition:background .12s, color .12s;
   }
-  .tab:hover{color:var(--bar-ink); background:#18232f}
-  .tab[aria-selected="true"]{background:#1E86F0; color:#fff}
-  .tab:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+  .apptab:hover{color:var(--ink); background:var(--surface-2)}
+  .apptab[aria-selected="true"]{background:var(--blue); color:#fff}
+  .apptab:focus-visible{outline:2px solid var(--blue); outline-offset:2px}
+
   .spacer{flex:1}
   .out{
-    font-size:12px; color:var(--bar-muted); text-decoration:none; flex:none;
-    padding:6px 10px; border:1px solid var(--bar-line); border-radius:7px;
+    font-family:var(--mono); font-size:11px; letter-spacing:.06em; color:var(--ink-2);
+    text-decoration:none; flex:none; padding:6px 11px;
+    border:1px solid var(--rule); border-radius:var(--r-sm);
   }
-  .out:hover{color:var(--bar-ink); border-color:#3A4E66}
-  @media (max-width:640px){ .brand,.out{display:none} nav{flex:1} }
+  .out:hover{color:var(--blue); border-color:var(--blue)}
+  @media (max-width:640px){ .brand,.out{display:none} .apptabs{flex:1} }
 
-  main{flex:1; position:relative; min-height:0; background:#fff}
-  iframe{
-    position:absolute; inset:0; width:100%; height:100%;
-    border:0; display:block; background:#fff;
-  }
-  iframe[hidden]{display:none}
+  main{flex:1; position:relative; min-height:0; background:var(--paper)}
+  iframe{position:absolute; inset:0; width:100%; height:100%; border:0; display:block; background:var(--paper)}
 </style>
 </head>
 <body>
 
-<header>
+<div class="appbar">
   <div class="brand">ADS <b>Visualizer</b></div>
-  <nav id="tabs" role="tablist" aria-label="시각화 목록"></nav>
+  <nav class="apptabs" id="tabs" role="tablist" aria-label="시각화 목록"></nav>
   <div class="spacer"></div>
   <a class="out" id="raw" href="#" target="_blank" rel="noopener">새 탭에서 열기 ↗</a>
-</header>
+</div>
 
 <main id="stage"></main>
 
@@ -80,7 +75,7 @@
 
   VIEWS.forEach(function(v){
     var b = document.createElement('button');
-    b.className = 'tab';
+    b.className = 'apptab';
     b.type = 'button';
     b.id = 'tab-' + v.id;
     b.textContent = v.label;
@@ -96,8 +91,7 @@
 
     VIEWS.forEach(function(v){
       var sel = v.id === view.id;
-      var t = document.getElementById('tab-' + v.id);
-      t.setAttribute('aria-selected', sel ? 'true' : 'false');
+      document.getElementById('tab-' + v.id).setAttribute('aria-selected', sel ? 'true' : 'false');
       if (frames[v.id]) frames[v.id].hidden = !sel;
     });
 
@@ -114,9 +108,7 @@
     document.title = view.title + ' — ADS Visualizer';
   }
 
-  function fromHash(){
-    return (location.hash || '').replace(/^#/, '') || VIEWS[0].id;
-  }
+  function fromHash(){ return (location.hash || '').replace(/^#/, '') || VIEWS[0].id; }
 
   window.addEventListener('hashchange', function(){ show(fromHash()); });
   show(fromHash());

@@ -1,0 +1,192 @@
+/* ==========================================================================
+   ADS Visualizer — shared light design system
+   One palette, one type scale, one set of surfaces for every page.
+   ========================================================================== */
+
+:root{
+  /* surfaces */
+  --paper:#F4F6F9;
+  --surface:#FFFFFF;
+  --surface-2:#F8FAFC;
+  --inset:#EEF2F7;
+  --film:#12202F;
+
+  /* lines */
+  --rule:#DCE3EC;
+  --rule-soft:#EAEFF5;
+
+  /* ink */
+  --ink:#12202F;
+  --ink-2:#5A6B7D;
+  --ink-3:#8496A8;
+
+  /* accents — one meaning per hue across every page */
+  --blue:#1A6FD4;    /* live / current / primary      */
+  --green:#12946A;   /* resolved / covered / good     */
+  --amber:#D9822B;   /* missing / blind / attention   */
+  --red:#BE4A45;     /* failure / degenerate          */
+
+  /* scene aliases — same three hues, named by what they mean on the map */
+  --live:#1A6FD4;    /* in view now      */
+  --cov:#12946A;     /* already seen     */
+  --blind:#D9822B;   /* never seen       */
+
+  /* tinted fills */
+  --blue-bg:#EAF1FB;   --blue-line:#C3D9F5;
+  --green-bg:#E8F5F0;  --green-line:#BEE3D4;
+  --amber-bg:#FBF1E5;  --amber-line:#EFD5B4;
+  --red-bg:#FBECEB;    --red-line:#F0C9C6;
+
+  /* scene neutrals */
+  --road:#E1E7EF;
+  --roadline:#FFFFFF;
+  --car:#39506A;
+
+  /* type */
+  --display:'Archivo',"Apple SD Gothic Neo","Pretendard",ui-sans-serif,system-ui,sans-serif;
+  --body:"Apple SD Gothic Neo","Pretendard",-apple-system,BlinkMacSystemFont,"Segoe UI","Malgun Gothic",ui-sans-serif,system-ui,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,"Courier New",monospace;
+
+  /* metrics */
+  --wrap:1120px;
+  --r:8px;
+  --r-sm:5px;
+  --shadow:0 1px 2px rgba(18,32,47,.05), 0 8px 24px -14px rgba(18,32,47,.20);
+
+  color-scheme:light;
+}
+
+*{box-sizing:border-box}
+html{color-scheme:light}
+body{
+  margin:0;
+  background:var(--paper);
+  color:var(--ink);
+  font-family:var(--body);
+  font-size:15px;
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+img{max-width:100%}
+[hidden]{display:none !important}
+
+/* --- page frame ---------------------------------------------------------- */
+.wrap{max-width:var(--wrap); margin:0 auto; padding:36px 24px 72px}
+@media (max-width:640px){ .wrap{padding:28px 16px 56px} }
+
+.page-head{margin-bottom:22px}
+.eyebrow{
+  font-family:var(--mono); font-size:11px; font-weight:500;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--ink-3);
+}
+h1{
+  font-family:var(--display); font-weight:700;
+  font-size:clamp(23px,3.2vw,30px); line-height:1.2; letter-spacing:-.02em;
+  margin:8px 0 0; text-wrap:balance;
+}
+.lead{margin:10px 0 0; color:var(--ink-2); max-width:70ch}
+
+h2,h3,h4{font-family:var(--display); letter-spacing:-.01em}
+
+/* --- panels -------------------------------------------------------------- */
+.panel{
+  background:var(--surface); border:1px solid var(--rule);
+  border-radius:var(--r); box-shadow:var(--shadow); overflow:hidden;
+}
+.panel-hd{
+  padding:11px 15px; border-bottom:1px solid var(--rule);
+  font-family:var(--display); font-weight:600; font-size:13px;
+  display:flex; justify-content:space-between; align-items:baseline; gap:12px;
+}
+.panel-hd span{font-family:var(--body); font-weight:400; color:var(--ink-2); font-size:12px}
+
+/* --- section tabs (inside a page) ---------------------------------------- */
+.tabs{display:flex; gap:2px; border-bottom:1px solid var(--rule); margin-bottom:22px}
+.tab{
+  font:inherit; font-family:var(--display); font-size:13.5px; font-weight:600;
+  padding:10px 16px; cursor:pointer; background:transparent;
+  border:0; border-bottom:2px solid transparent; margin-bottom:-1px;
+  color:var(--ink-2); border-radius:var(--r-sm) var(--r-sm) 0 0;
+}
+.tab:hover{color:var(--ink); background:var(--surface-2)}
+.tab[aria-selected="true"]{color:var(--blue); border-bottom-color:var(--blue)}
+.tab:focus-visible{outline:2px solid var(--blue); outline-offset:-2px}
+[role=tabpanel][hidden]{display:none}
+
+/* --- legend -------------------------------------------------------------- */
+.legend{
+  display:flex; gap:16px; flex-wrap:wrap;
+  font-family:var(--mono); font-size:11px; color:var(--ink-2);
+}
+.legend span{display:flex; align-items:center; gap:6px}
+.legend i,.legend .sw{
+  display:inline-block; width:10px; height:10px; border-radius:2px;
+  flex:none; vertical-align:-1px;
+}
+
+/* --- controls ------------------------------------------------------------ */
+input[type=range]{
+  -webkit-appearance:none; appearance:none; width:100%; height:20px;
+  background:transparent; margin:0; accent-color:var(--blue);
+}
+input[type=range]::-webkit-slider-runnable-track{height:3px; background:var(--rule); border-radius:2px}
+input[type=range]::-moz-range-track{height:3px; background:var(--rule); border-radius:2px}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none; width:15px; height:15px; border-radius:50%;
+  background:var(--blue); margin-top:-6px; border:2px solid var(--surface);
+  box-shadow:0 1px 3px rgba(18,32,47,.28); cursor:grab;
+}
+input[type=range]::-moz-range-thumb{
+  width:15px; height:15px; border-radius:50%; background:var(--blue);
+  border:2px solid var(--surface); box-shadow:0 1px 3px rgba(18,32,47,.28); cursor:grab;
+}
+input[type=range]:focus-visible{outline:2px solid var(--blue); outline-offset:3px}
+
+button.act,.btn{
+  font:inherit; font-family:var(--display); font-size:12.5px; font-weight:600;
+  padding:7px 13px; border-radius:var(--r-sm); cursor:pointer;
+  border:1px solid var(--rule); background:var(--surface); color:var(--ink);
+  transition:border-color .15s, color .15s, background .15s;
+}
+button.act:hover,.btn:hover{border-color:var(--blue); color:var(--blue)}
+button.act:focus-visible,.btn:focus-visible{outline:2px solid var(--blue); outline-offset:2px}
+button.act[aria-pressed="true"],.btn[aria-pressed="true"]{
+  background:var(--blue); border-color:var(--blue); color:#fff;
+}
+button.act:disabled,.btn:disabled{opacity:.5; cursor:default}
+
+/* --- readouts ------------------------------------------------------------ */
+.row{
+  display:flex; justify-content:space-between; gap:10px; padding:8px 0;
+  border-bottom:1px solid var(--rule-soft); font-size:13px;
+}
+.row b{font-variant-numeric:tabular-nums; font-weight:600; white-space:nowrap}
+.key{color:var(--ink-2)}
+.ok{color:var(--green)} .bad{color:var(--red)}
+
+.alert{margin-top:12px; padding:11px 13px; border-radius:var(--r-sm); font-size:12.5px; line-height:1.55}
+.alert.good{background:var(--green-bg); border:1px solid var(--green-line); color:#0C6B4D}
+.alert.risk{background:var(--red-bg);   border:1px solid var(--red-line);   color:#8E332F}
+
+/* --- prose --------------------------------------------------------------- */
+code{
+  background:var(--inset); padding:1px 5px; border-radius:3px;
+  font-size:12.5px; font-family:var(--mono);
+}
+.fml{
+  margin:14px 0; padding:12px 16px; background:var(--surface-2);
+  border-left:3px solid var(--blue); border-radius:0 var(--r-sm) var(--r-sm) 0;
+  font-family:var(--mono); font-size:13px; line-height:1.9; color:var(--ink);
+  overflow-x:auto; white-space:pre;
+}
+.fml .cm{color:var(--ink-3)}
+.callout{
+  margin:16px 0; padding:13px 15px; border:1px solid var(--rule);
+  border-radius:var(--r-sm); background:var(--surface);
+}
+.callout b{display:block; margin-bottom:4px}
+figure{margin:20px 0}
+figcaption{font-size:12.5px; color:var(--ink-2); margin-top:8px}
+
+@media (prefers-reduced-motion: reduce){ *{animation:none !important; transition:none !important} }

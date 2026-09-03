@@ -5,189 +5,86 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <meta name="description" content="Interactive geometry model of the blind spot left on roadside poles by drive-based ADS inspection.">
-<style>html{color-scheme:dark}body{margin:0;font:14px system-ui}img{max-width:100%}[hidden]{display:none!important}</style>
-</head>
-<body>
-<title>ADS Blind Spot Simulator</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/theme.css">
+<title>ADS Blind Spot Simulator</title>
+</head>
+<body>
 <style>
-  :root{
-    --bg:#0B0F0E; --surface:#131A19; --surface-2:#1A2321; --line:#2B3634; --line-soft:#212B29;
-    --ink:#E3E9E5; --muted:#8C9C97;
-    --cov:#35C9B2; --live:#5CBAF2; --blind:#FF8A4C;
-    --road:#222B29; --roadline:#4C5956; --car:#DCE4E1;
-    --shadow:0 1px 2px rgba(0,0,0,.45), 0 10px 30px -14px rgba(0,0,0,.75);
-    --display:'Archivo',ui-sans-serif,system-ui,sans-serif;
-    --body:'Source Serif 4',Georgia,serif;
-    --mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,monospace;
-    color-scheme:dark;
-  }
-  :root[data-theme="light"]{
-    --bg:#ECEFEA; --surface:#FFFFFF; --surface-2:#F5F7F3; --line:#D5DBD4; --line-soft:#E4E9E3;
-    --ink:#131A19; --muted:#5C6A67;
-    --cov:#0E7C74; --live:#1668A8; --blind:#C2521C;
-    --road:#C6CCC7; --roadline:#FFFFFF; --car:#1D2725;
-    --shadow:0 1px 2px rgba(19,26,25,.06), 0 8px 24px -12px rgba(19,26,25,.18);
-    color-scheme:light;
-  }
-
-  *{box-sizing:border-box}
-  body{
-    margin:0; background:var(--bg); color:var(--ink);
-    font-family:var(--body); font-size:17px; line-height:1.65;
-    -webkit-font-smoothing:antialiased;
-  }
-  .wrap{max-width:1060px; margin:0 auto; padding:34px 24px 46px}
-  @media (max-width:640px){ .wrap{padding:32px 16px 64px} }
-
-  .eyebrow{
-    font-family:var(--mono); font-size:11.5px; font-weight:500;
-    letter-spacing:.16em; text-transform:uppercase; color:var(--muted);
-  }
-  h1{
-    font-family:var(--display); font-weight:700; font-size:clamp(24px,3.4vw,32px);
-    line-height:1.15; letter-spacing:-.02em; margin:9px 0 0; text-wrap:balance;
-  }
-
-  header{
-    padding-bottom:18px; margin-bottom:16px;
-    display:flex; justify-content:space-between; align-items:flex-start; gap:20px; flex-wrap:wrap;
-  }
-  .themeswitch{
-    display:inline-flex; border:1px solid var(--line); border-radius:999px;
-    background:var(--surface); padding:2px; flex:none;
-  }
-  .themeswitch button{
-    font-family:var(--mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase;
-    color:var(--muted); background:transparent; border:0; border-radius:999px;
-    padding:5px 13px; cursor:pointer;
-  }
-  .themeswitch button[aria-pressed="true"]{background:var(--ink); color:var(--surface)}
-  .themeswitch button:focus-visible{outline:2px solid var(--blind); outline-offset:2px}
-
-
-  .panel{
-    background:var(--surface); border:1px solid var(--line); border-radius:10px;
-    box-shadow:var(--shadow); overflow:hidden;
-  }
-
-  .sim-map{position:relative; min-height:206px; border-bottom:1px solid var(--line)}
+  .sim-map{position:relative; height:232px}
   #map{position:absolute; inset:0; width:100%; height:100%}
   canvas{display:block; width:100%}
-  .cap{
-    position:absolute; top:12px; left:14px; z-index:1; font-family:var(--mono); font-size:10.5px;
-    letter-spacing:.12em; text-transform:uppercase; color:var(--muted);
-  }
-  .legend{
-    position:absolute; bottom:10px; right:14px; z-index:1; display:flex; gap:14px; flex-wrap:wrap;
-    font-family:var(--mono); font-size:10.5px; color:var(--muted);
-  }
-  .legend span{display:flex; align-items:center; gap:5px}
-  .sw{width:10px; height:10px; border-radius:2px; display:inline-block}
+  .map-legend{padding:10px 15px; border-top:1px solid var(--rule); border-bottom:1px solid var(--rule); background:var(--surface)}
 
   .poles{display:grid; grid-template-columns:repeat(5,1fr); background:var(--surface-2)}
   @media (max-width:900px){ .poles{grid-template-columns:repeat(2,1fr)} }
   @media (max-width:520px){ .poles{grid-template-columns:1fr} }
-  .pole-card{padding:12px 12px 12px; border-right:1px solid var(--line-soft)}
+  .pole-card{padding:13px; border-right:1px solid var(--rule-soft)}
   .pole-card:last-child{border-right:0}
-  @media (max-width:700px){
-    .pole-card{border-right:0; border-bottom:1px solid var(--line-soft)}
+  @media (max-width:900px){
+    .pole-card{border-right:0; border-bottom:1px solid var(--rule-soft)}
     .pole-card:last-child{border-bottom:0}
   }
   .pole-head{display:flex; justify-content:space-between; align-items:baseline; gap:8px; margin-bottom:6px}
+  .pole-name{font-family:var(--mono); font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3)}
+  .pole-pct{
+    font-family:var(--display); font-weight:700; font-size:18px; letter-spacing:-.02em;
+    color:var(--amber); font-variant-numeric:tabular-nums;
+  }
+  .pole-pct small{font-size:11px; font-weight:500; color:var(--ink-3); margin-left:1px}
   .pole-meta{
     display:flex; justify-content:space-between; align-items:baseline; gap:8px;
-    font-family:var(--mono); font-size:10px; letter-spacing:.04em; color:var(--muted);
-    padding:7px 0 0; margin-top:5px; border-top:1px solid var(--line-soft);
+    font-size:12px; color:var(--ink-2);
+    padding-top:8px; margin-top:6px; border-top:1px solid var(--rule-soft);
   }
-  .pole-meta b{color:var(--live); font-weight:600; font-size:12.5px; font-variant-numeric:tabular-nums; white-space:nowrap}
-  .pole-card .ctl{margin-top:9px}
-  .pole-card .ctl label{font-size:10px}
-  .pole-name{font-family:var(--mono); font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted)}
-  .pole-pct{
-    font-family:var(--display); font-weight:700; font-size:17px; letter-spacing:-.02em;
-    color:var(--blind); font-variant-numeric:tabular-nums;
-  }
-  .pole-pct small{font-size:11px; font-weight:500; color:var(--muted); margin-left:1px}
-
+  .pole-meta b{color:var(--blue); font-weight:600; font-variant-numeric:tabular-nums; white-space:nowrap}
+  .pole-card .ctl{margin-top:10px}
+  .pole-card .ctl label{font-size:11.5px}
 
   .controls{
-    border-top:1px solid var(--line); background:var(--surface-2);
+    border-top:1px solid var(--rule); background:var(--surface-2);
     padding:16px; display:grid; grid-template-columns:repeat(3,1fr); gap:14px 26px; align-items:end;
   }
   @media (max-width:760px){ .controls{grid-template-columns:1fr} }
   .ctl{display:flex; flex-direction:column; gap:5px}
   .ctl label{
-    font-family:var(--mono); font-size:11px; letter-spacing:.06em; color:var(--muted);
+    font-size:13px; color:var(--ink-2);
     display:flex; justify-content:space-between; align-items:baseline; gap:10px;
   }
-  .ctl label b{color:var(--ink); font-weight:600; font-variant-numeric:tabular-nums; font-size:12.5px; white-space:nowrap}
-  input[type=range]{-webkit-appearance:none; appearance:none; width:100%; height:20px; background:transparent; margin:0}
-  input[type=range]::-webkit-slider-runnable-track{height:3px; background:var(--line); border-radius:2px}
-  input[type=range]::-moz-range-track{height:3px; background:var(--line); border-radius:2px}
-  input[type=range]::-webkit-slider-thumb{
-    -webkit-appearance:none; width:15px; height:15px; border-radius:50%;
-    background:var(--ink); margin-top:-6px; border:2px solid var(--surface); cursor:grab;
-  }
-  input[type=range]::-moz-range-thumb{
-    width:15px; height:15px; border-radius:50%; background:var(--ink);
-    border:2px solid var(--surface); cursor:grab;
-  }
-  input[type=range]:focus-visible::-webkit-slider-thumb{outline:2px solid var(--blind); outline-offset:2px}
+  .ctl label b{color:var(--blue); font-weight:600; font-variant-numeric:tabular-nums; white-space:nowrap}
 
-  .recout[hidden]{display:none}
-  .recout{
-    grid-column:1/-1; margin-top:6px; padding-top:14px; border-top:1px solid var(--line);
-    display:flex; flex-direction:column; gap:8px;
-  }
-  .recout img{width:100%; max-width:720px; border:1px solid var(--line); border-radius:8px; display:block}
-  .recnote{
-    display:flex; gap:14px; align-items:baseline; flex-wrap:wrap;
-    font-family:var(--mono); font-size:11px; color:var(--muted);
-  }
-  .recnote #recerr{color:var(--blind)}
-  .recnote a{color:var(--live); font-weight:600; text-decoration:none; border-bottom:1px solid currentColor}
-  .recnote a[hidden]{display:none}
-  .recnote button{padding:5px 11px}
   .btnrow{grid-column:1/-1; display:flex; gap:8px; flex-wrap:wrap; align-items:center; padding-top:4px}
-  button{
-    font-family:var(--mono); font-size:12px; letter-spacing:.04em; color:var(--ink);
-    background:var(--surface); border:1px solid var(--line); border-radius:6px;
-    padding:7px 13px; cursor:pointer; transition:background .15s, border-color .15s;
+  .recout{
+    grid-column:1/-1; margin-top:6px; padding-top:14px; border-top:1px solid var(--rule);
+    display:flex; flex-direction:column; gap:10px;
   }
-  button:hover{background:var(--bg); border-color:var(--muted)}
-  button:focus-visible{outline:2px solid var(--blind); outline-offset:2px}
-  button[aria-pressed="true"]{background:var(--ink); color:var(--surface); border-color:var(--ink)}
-
-
-
-
-  @media (prefers-reduced-motion: reduce){ *{animation:none !important; transition:none !important} }
+  .recout img{width:100%; max-width:760px; border:1px solid var(--rule); border-radius:var(--r-sm); display:block}
+  .recnote{display:flex; gap:14px; align-items:center; flex-wrap:wrap; font-size:12.5px; color:var(--ink-2)}
+  .recnote #recerr{color:var(--red)}
+  .recnote a{color:var(--blue); font-weight:600; text-decoration:none; border-bottom:1px solid currentColor}
+  .recnote a[hidden]{display:none}
 </style>
 
 <div class="wrap">
-  <header>
-    <div>
-      <div class="eyebrow">ADS / drive-based pole inspection &middot; coverage geometry</div>
-      <h1>ADS Blind Spot Simulator</h1>
-    </div>
-    <div class="themeswitch" role="group" aria-label="Colour theme">
-      <button type="button" id="th-light" aria-pressed="false">Light</button>
-      <button type="button" id="th-dark" aria-pressed="true">Dark</button>
-    </div>
+  <header class="page-head">
+    <div class="eyebrow">ADS / drive-based pole inspection &middot; coverage geometry</div>
+    <h1>ADS Blind Spot Simulator</h1>
+    <p class="lead">A forward-looking camera holds a pole only while it is ahead and inside the usable range. Each pass sweeps one half of the azimuth; whatever neither pass reaches stays blind.</p>
   </header>
 
   <div class="panel">
+    <div class="panel-hd">Plan view <span>Five poles, one round trip</span></div>
     <div class="sim-map">
-      <div class="cap">Plan view &middot; five poles, one round trip</div>
+      <canvas id="map" height="232" data-fill="1"></canvas>
+    </div>
+    <div class="map-legend">
       <div class="legend">
         <span><i class="sw" style="background:var(--live)"></i>In view now</span>
         <span><i class="sw" style="background:var(--cov)"></i>Already seen</span>
         <span><i class="sw" style="background:var(--blind)"></i>Never seen</span>
       </div>
-      <canvas id="map" height="206" data-fill="1"></canvas>
     </div>
 
     <div class="poles">
@@ -252,14 +149,14 @@
         <input type="range" id="s-sp" min="15" max="90" step="1" value="40">
       </div>
       <div class="btnrow">
-        <button id="btn-play" aria-pressed="true">Pause</button>
-        <button id="btn-reset">Replay</button>
-        <button id="btn-rec">Record GIF</button>
+        <button class="act" id="btn-play" aria-pressed="true">Pause</button>
+        <button class="act" id="btn-reset">Replay</button>
+        <button class="act" id="btn-rec">Record GIF</button>
       </div>
       <div class="recout" id="recout" hidden>
         <img id="recimg" alt="Recorded lap">
         <div class="recnote">
-          <button id="recsave" hidden>Save GIF</button>
+          <button class="act" id="recsave" hidden>Save GIF</button>
           <a id="recdl" hidden download="ads-blind-spot.gif">Download GIF</a>
           <span id="recinfo"></span>
           <span id="recerr"></span>
@@ -428,7 +325,7 @@
 
     function trace(y, active){
       var TH=travelHalf();
-      g.strokeStyle = active? LIVE : css('--muted');
+      g.strokeStyle = active? LIVE : css('--ink-2');
       g.lineWidth=2; g.globalAlpha=active?.75:.3; g.setLineDash(active?[]:[4,4]);
       g.beginPath(); g.moveTo(X(-TH),y); g.lineTo(X(TH),y); g.stroke();
       g.setLineDash([]); g.globalAlpha=1;
@@ -478,9 +375,9 @@
         g.lineWidth=ring; g.strokeStyle=segColor(seg.v); g.stroke();
       }
       g.fillStyle=css('--surface'); g.beginPath(); g.arc(cxp,cyp,Math.max(2,R-ring-1),0,Math.PI*2); g.fill();
-      g.strokeStyle=css('--line'); g.lineWidth=1; g.stroke();
+      g.strokeStyle=css('--rule'); g.lineWidth=1; g.stroke();
 
-      g.strokeStyle=css('--muted'); g.globalAlpha=(p.dummy?.14:.5); g.setLineDash([2,4]); g.lineWidth=1;
+      g.strokeStyle=css('--ink-2'); g.globalAlpha=(p.dummy?.14:.5); g.setLineDash([2,4]); g.lineWidth=1;
       g.beginPath(); g.moveTo(cxp,cyp+R); g.lineTo(cxp,laneNear); g.stroke();
       g.setLineDash([]); g.globalAlpha=p.dummy?.28:1;
 
@@ -491,15 +388,15 @@
         var lx=cxp-(lw+dw)/2, ly=Math.max(11, cyp-R-8);
         g.textAlign='left';
         g.fillStyle=css('--ink'); g.font=monoFont(11,'600'); g.fillText(lab, lx, ly);
-        g.fillStyle=css('--muted'); g.font=MONO; g.fillText(dim, lx+lw, ly);
+        g.fillStyle=css('--ink-2'); g.font=MONO; g.fillText(dim, lx+lw, ly);
       }
       g.globalAlpha=1;
     }
 
     g.font=MONO; g.textAlign='right';
-    g.fillStyle = phase===2? LIVE : css('--muted');
+    g.fillStyle = phase===2? LIVE : css('--ink-2');
     g.fillText('←  PASS 2', W-12, laneNear-half-8);
-    g.fillStyle = phase===1? LIVE : css('--muted');
+    g.fillStyle = phase===1? LIVE : css('--ink-2');
     g.fillText('PASS 1  →', W-12, laneFar+half+16);
   }
 
@@ -512,10 +409,10 @@
       g.beginPath(); g.arc(cx,cy,R-ring/2,seg.a0*DEG,seg.a1*DEG);
       g.lineWidth=ring; g.strokeStyle=segColor(seg.v); g.stroke();
     }
-    g.strokeStyle=css('--line'); g.lineWidth=1;
+    g.strokeStyle=css('--rule'); g.lineWidth=1;
     g.beginPath(); g.arc(cx,cy,R,0,Math.PI*2); g.stroke();
     g.beginPath(); g.arc(cx,cy,R-ring,0,Math.PI*2); g.stroke();
-    g.fillStyle=css('--muted'); g.font=monoFont(9); g.textAlign='center';
+    g.fillStyle=css('--ink-2'); g.font=monoFont(9); g.textAlign='center';
     g.fillText('ROAD', cx, cy+R+14);
     g.fillText('BACK', cx, cy-R-7);
   }
@@ -666,20 +563,20 @@
     g.fillStyle=css('--surface'); g.fillRect(0,0,L.W,L.mapH);
     g.drawImage(document.getElementById('map'), 0, 0, L.W, L.mapH);
     g.fillStyle=css('--surface-2'); g.fillRect(0,L.mapH,L.W,L.donutH+L.footH);
-    g.strokeStyle=css('--line'); g.lineWidth=1;
+    g.strokeStyle=css('--rule'); g.lineWidth=1;
     g.beginPath(); g.moveTo(0,L.mapH+.5); g.lineTo(L.W,L.mapH+.5); g.stroke();
     for(var k=0;k<CARDS.length;k++){
       var x=k*L.cellW, top=L.mapH;
-      if(k){ g.strokeStyle=css('--line-soft'); g.beginPath(); g.moveTo(x+.5,top); g.lineTo(x+.5,top+L.donutH); g.stroke(); }
-      g.fillStyle=css('--muted'); g.font=monoFont(10); g.textAlign='left';
+      if(k){ g.strokeStyle=css('--rule-soft'); g.beginPath(); g.moveTo(x+.5,top); g.lineTo(x+.5,top+L.donutH); g.stroke(); }
+      g.fillStyle=css('--ink-2'); g.font=monoFont(10); g.textAlign='left';
       g.fillText('POLE '+CARDS[k].label, x+L.pad, top+17);
       g.fillStyle=css('--blind'); g.font='700 15px '+css('--display').split(',')[0].replace(/["']/g,'')+',sans-serif';
       g.textAlign='right'; g.fillText(document.getElementById('p-'+CARDS[k].id).textContent, x+L.cellW-L.pad, top+18);
       g.drawImage(document.getElementById('rose-'+CARDS[k].id), x+L.pad, top+L.headH, L.roseW, L.roseH);
     }
     var fy=L.mapH+L.donutH;
-    g.strokeStyle=css('--line'); g.beginPath(); g.moveTo(0,fy+.5); g.lineTo(L.W,fy+.5); g.stroke();
-    g.fillStyle=css('--muted'); g.font=monoFont(10); g.textAlign='left';
+    g.strokeStyle=css('--rule'); g.beginPath(); g.moveTo(0,fy+.5); g.lineTo(L.W,fy+.5); g.stroke();
+    g.fillStyle=css('--ink-2'); g.font=monoFont(10); g.textAlign='left';
     g.fillText(P.kmh.toFixed(0)+' km/h  ·  L '+P.L.toFixed(0)+' m  ·  spacing '+P.spacing.toFixed(0)+
                ' m  ·  '+FPS+' fps  ·  two passes', L.pad, fy+17);
   }
@@ -826,23 +723,6 @@
   });
   document.getElementById('recsave').addEventListener('click',function(){ saveGif(false); });
 
-  // theme
-  function applyTheme(t){
-    document.documentElement.setAttribute('data-theme',t);
-    document.getElementById('th-light').setAttribute('aria-pressed',String(t==='light'));
-    document.getElementById('th-dark').setAttribute('aria-pressed',String(t==='dark'));
-    try{ localStorage.setItem('ads-theme',t); }catch(e){}
-  }
-  (function(){
-    var t=document.documentElement.getAttribute('data-theme');
-    if(t!=='light'&&t!=='dark'){
-      t='dark';
-      try{ var v=localStorage.getItem('ads-theme'); if(v==='light'||v==='dark') t=v; }catch(e){}
-    }
-    applyTheme(t);
-  })();
-  document.getElementById('th-light').addEventListener('click',function(){ applyTheme('light'); });
-  document.getElementById('th-dark').addEventListener('click',function(){ applyTheme('dark'); });
 
   layout(); refresh();
   requestAnimationFrame(frame);
